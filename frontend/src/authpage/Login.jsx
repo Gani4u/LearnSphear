@@ -11,9 +11,9 @@ export const Login=()=>{
     const role1 = useSelector((state) => state.auth.role1); // ✅ Get role1
     const navigate=useNavigate();
     const handleclick=()=>{
-        if(role1==="student"){
+        if(role1==="STUDENT"){
             navigate("/mylearning");
-        }else if(role1==="teacher"){
+        }else if(role1==="TRAINER"){
             navigate("/myclass")
         }}
 
@@ -47,7 +47,7 @@ export const Login=()=>{
         <button onClick={handleclick}>click me</button>
         <div className="login-container">
         <h2>login</h2>
-       
+
         {error&&<p style={{color:"red"}}>{error.message}</p>}
         <form className="loginform" onSubmit={handlesubmit}>
             <input type="email" name="email" placeholder="email" onChange={handleChange} required />

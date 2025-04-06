@@ -15,8 +15,8 @@ const [formData, setFormData] = useState({
   username: "",
   email: "",
   password: "",
-  confirmPassword: "",
-  phone: "",
+  // confirmPassword: "",
+  // phone: "",
   role: "",
 });
 
@@ -43,14 +43,14 @@ const handleSubmit = (e) => {
     setFormError("Password must be at least 6 characters.");
     return;
   }
-  if (formData.password !== formData.confirmPassword) {
-    setFormError("Passwords do not match.");
-    return;
-  }
-  if (!formData.phone.match(/^\d{10}$/)) {
-    setFormError("Enter a valid 10-digit phone number.");
-    return;
-  }
+//   if (formData.password !== formData.confirmPassword) {
+//     setFormError("Passwords do not match.");
+//     return;
+//   }
+//   if (!formData.phone.match(/^\d{10}$/)) {
+//     setFormError("Enter a valid 10-digit phone number.");
+//     return;
+//   }
   if (!formData.role) {
     setFormError("Please select a role.");
     return;
@@ -77,12 +77,12 @@ const handleSubmit = (e) => {
         <input name="username" placeholder="Username" onChange={handleChange} required />
         <input name="email" type="email" placeholder="Email" onChange={handleChange} required />
         <input name="password" type="password" placeholder="Password" onChange={handleChange} required />
-        <input name="confirmPassword" type="password" placeholder="Re-enter Password" onChange={handleChange} required />
-        <input name="phone" placeholder="Phone" onChange={handleChange} required />
+{/*         <input name="confirmPassword" type="password" placeholder="Re-enter Password" onChange={handleChange} required /> */}
+{/*         <input name="phone" placeholder="Phone" onChange={handleChange} required /> */}
         <select name="role" onChange={handleChange} required>
           <option value="">Select Role</option>
-          <option value="student">Student</option>
-          <option value="instructor">Instructor</option>
+          <option value="STUDENT">Student</option>
+          <option value="TRAINER">Instructor</option>
         </select>
         <button type="submit" disabled={isPending}>
           {isPending ? "Registering..." : "Register"}
