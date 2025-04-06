@@ -1,0 +1,72 @@
+/* Base body styles */
+body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f8f9fa;
+    color: #333;
+  }
+  
+  /* Buttons */
+  button {
+    padding: 10px 20px;
+    border: none;
+    background-color: #6f42c1; /* Primary Purple */
+    color: white;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: 500;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+    transition: background-color 0.3s ease, font-weight 0.3s ease, box-shadow 0.3s ease;
+  }
+  
+  button:hover {
+    background-color: #5a32a3; /* Darker Purple on hover */
+    font-weight: 600;
+    box-shadow: 0 6px 10px rgba(0, 0, 0, 0.15); /* More intense shadow on hover */
+  }
+  
+  /* Error and success messages */
+  .error {
+    color: #dc3545; /* Red */
+    font-size: 0.9rem;
+  }
+  
+  .success {
+    color: #28a745; /* Green */
+    font-size: 0.9rem;
+  }
+  
+  /* Input and select fields */
+  input,
+  select {
+    padding: 10px;
+    margin: 8px 0;
+    width: 100%;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+    box-sizing: border-box;
+    font-size: 1rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08); /* Light shadow */
+    transition: box-shadow 0.3s ease, border-color 0.3s ease, transform 0.2s ease;
+  }
+  
+  input:focus,
+  select:focus {
+    outline: none;
+    border-color: #6f42c1; /* Purple border */
+    box-shadow: 0 0 0 4px rgba(111, 66, 193, 0.2); /* Purple glow */
+    transform: scale(1.03); /* Slight zoom on focus */
+  }
+  
+  /* Headings */
+  h1, h2, h3 {
+    color: #222;
+  }
+  
+  /* Optional: Form container */
+  form {
+    max-width: 400px;
+    margin: auto;
+  }
+  

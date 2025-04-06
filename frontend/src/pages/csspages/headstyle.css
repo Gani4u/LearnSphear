@@ -1,0 +1,11 @@
+.nav{
+    display: flex;
+    justify-content: space-between;
+    margin: 12px;
+    padding:10px;
+}
+
+.topbar{
+    display: flex;
+    gap: 10px;
+}
