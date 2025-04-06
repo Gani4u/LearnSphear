@@ -11,9 +11,9 @@ export const Login=()=>{
     const role1 = useSelector((state) => state.auth.role1); // ✅ Get role1
     const navigate=useNavigate();
     const handleclick=()=>{
-        if(role1==="student"){
+        if(role1==="STUDENT"){
             navigate("/mylearning");
-        }else if(role1==="teacher"){
+        }else if(role1==="TRAINER"){
             navigate("/myclass")
         }}
 
@@ -48,7 +48,7 @@ export const Login=()=>{
         <h2>login</h2>
         {error&&<p style={{color:"red"}}>{error.message}</p>}
         <form onSubmit={handlesubmit}>
-            <input type="email" name="email" placeholder="email" onChange={handleChange} required />
+            <input type="text" name="email" placeholder="username" onChange={handleChange} required />
             <input type="password" name="password" placeholder="password" onChange={handleChange} require />
 
             <button type="submit" disabled={isPending}>{isPending?"logggingg...":"loged in"}</button>
