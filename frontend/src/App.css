@@ -1,6 +1,15 @@
 .App {
   text-align: center;
 }
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  overflow-x: hidden; /* 💥 This stops horizontal scroll */
+}
 
 .App-logo {
   height: 40vmin;
