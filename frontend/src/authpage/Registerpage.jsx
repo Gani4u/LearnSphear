@@ -4,7 +4,7 @@ import { useRegister } from "../Api/UserRegister";
 
 import { useNavigate } from "react-router-dom";
 //import { loginSuccess } from "../store/AuthSlice";
-
+import '../pages/csspages/registerpagestyle.css'
 
 export const Registerpage=()=>{
     //const dispatch = useDispatch();
@@ -67,13 +67,13 @@ const handleSubmit = (e) => {
 };
     return(
         <>
-        <h1>hello register page page </h1>     
-        <div>
+          
+        <div className="reg-container">
       <h2>Register</h2>
       {formError && <p style={{ color: "red" }}>{formError}</p>}
       {error && <p style={{ color: "red" }}>{error.message}</p>}
 
-      <form onSubmit={handleSubmit}>
+      <form className="classform" onSubmit={handleSubmit}>
         <input name="username" placeholder="Username" onChange={handleChange} required />
         <input name="email" type="email" placeholder="Email" onChange={handleChange} required />
         <input name="password" type="password" placeholder="Password" onChange={handleChange} required />

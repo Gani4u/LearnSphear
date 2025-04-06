@@ -1,6 +1,6 @@
 import { useState } from "react";
 import {  useDispatch, useSelector } from "react-redux";
-
+import '../pages/csspages/loginstyle.css'
 import { useNavigate } from "react-router-dom";
 import { useLogin } from "../Api/useLogin";
 import { loginSuccess } from "../store/AuthSlice";
@@ -44,15 +44,18 @@ export const Login=()=>{
     return(
         <>
         
-        <button onClick={handleclick}>click me</button>   
+        <button onClick={handleclick}>click me</button>
+        <div className="login-container">
         <h2>login</h2>
+       
         {error&&<p style={{color:"red"}}>{error.message}</p>}
-        <form onSubmit={handlesubmit}>
+        <form className="loginform" onSubmit={handlesubmit}>
             <input type="email" name="email" placeholder="email" onChange={handleChange} required />
             <input type="password" name="password" placeholder="password" onChange={handleChange} require />
 
-            <button type="submit" disabled={isPending}>{isPending?"logggingg...":"loged in"}</button>
+            <button className="login-container-button" type="submit" disabled={isPending}>{isPending?"logggingg...":"loged in"}</button>
         </form>
+        </div>
 
 
         </>
