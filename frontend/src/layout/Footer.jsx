@@ -1,3 +1,4 @@
+import '../pages/csspages/footerstyle.css'
 export const Footer=()=>{
     return(
         <>
