@@ -26,7 +26,7 @@ export const registerUser = createAsyncThunk(
 );
 
 // Auth slice
-const authSlice = createSlice({
+const authSlice111 = createSlice({
   name: "auth",
   initialState: {
     user: null,
@@ -51,4 +51,4 @@ const authSlice = createSlice({
   },
 });
 
-export default authSlice.reducer;
+//export default authSlice111.reducer;

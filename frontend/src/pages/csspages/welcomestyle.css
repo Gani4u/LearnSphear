@@ -1,0 +1,46 @@
+.welcome-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+  
+  .welcome-button {
+    padding: 10px 20px;
+    border: none;
+    min-width: 150px;
+
+    background-color: #6f42c1; /* Primary Purple */
+    color: white;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: 500;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+    transition: background-color 0.3s ease, font-weight 0.3s ease, box-shadow 0.3s ease;
+  }
+  
+  .welcome-button:hover {
+    background-color: #5a32a3;
+    font-weight: 600;
+    box-shadow: 0 6px 10px rgba(0, 0, 0, 0.15);
+    color: white;
+
+  }
+
+  .welcome-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    height: 100vh; /* full viewport height */
+    padding: 20px;
+  }
+  
+  .welcome-button-container {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-bottom: 150px; /* slightly up from bottom */
+
+  }
+  
