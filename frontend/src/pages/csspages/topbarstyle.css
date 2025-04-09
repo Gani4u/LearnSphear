@@ -1,0 +1,12 @@
+.container{
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+.outletdiv{
+    flex: 1;
+    padding: 10px;
+}
+footer{
+    padding: 10px;
+}

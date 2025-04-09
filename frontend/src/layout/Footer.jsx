@@ -1,7 +1,10 @@
+import '../pages/csspages/footerstyle.css'
 export const Footer=()=>{
     return(
         <>
-        <h1>hello footer page</h1>
+        <footer>
+      <p>© 2025 E-Learning Platform | All rights reserved</p>
+    </footer>
         
         </>
     )
