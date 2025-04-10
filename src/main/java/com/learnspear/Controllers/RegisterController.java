@@ -1,9 +1,11 @@
 package com.learnspear.Controllers;
 
+import com.learnspear.DTOs.LoginRequestDto;
 import com.learnspear.Service.JwtService;
 import com.learnspear.Service.RegisterService;
 import com.learnspear.entites.Users;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -24,8 +26,8 @@ public class RegisterController {
     }
 
     @PostMapping("/login")
-    public String login(@RequestBody Users users){
-        return registerService.verify(users);
+    public ResponseEntity<?> login(@RequestBody LoginRequestDto requestDto){
+        return registerService.verify(requestDto);
     }
 
 }

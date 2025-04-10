@@ -1,16 +1,16 @@
 import { useSelector } from "react-redux"
 
 export const Home=()=>{
-    const role1=useSelector((state)=>state.auth.role1);
+    const role=useSelector((state)=>state.auth.role);
     return(
         <>
-       {role1==="student"&&(<div>
+       {role==="STUDENT"&&(<div>
         <p>this is student field</p>
        </div>
 
        )}
 
-       {role1==="instructor"&& (
+       {role==="TRAINER"&& (
         <div>
             <p>this is teacher field</p>
         </div>

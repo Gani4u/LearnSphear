@@ -48,7 +48,7 @@ export const Login=()=>{
             <input type="text" name="username" placeholder="username" onChange={handleChange} required />
             <input type="password" name="password" placeholder="password" onChange={handleChange} required />
 
-            <button className="login-container-button" type="submit" disabled={isPending}>{isPending?"logggingg...":"loged in"}</button>
+            <button className="login-container-button" type="submit" disabled={isPending}>{isPending?"logging...":"login"}</button>
         </form>
         </div>
 
