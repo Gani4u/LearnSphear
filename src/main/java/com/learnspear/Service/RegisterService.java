@@ -14,6 +14,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Map;
+import java.util.Optional;
 
 @Service
 public class RegisterService {
@@ -43,7 +44,7 @@ public class RegisterService {
 
         if(authentication.isAuthenticated()){
             String token = jwtService.generateToken(users.getUsername());
-            Users user = userRepo.findByUsername(users.getUsername()); // or whatever you call it
+            Optional<Users> user = userRepo.findByUsername(users.getUsername()); // or whatever you call it
             return ResponseEntity.ok(Map.of(
                     "token", token,
                     "user", user

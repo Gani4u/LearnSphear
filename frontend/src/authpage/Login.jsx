@@ -29,7 +29,7 @@ export const Login=()=>{
                     if(data.user.role==="STUDENT"){
                         navigate("/mylearning");
                     }else if(data.user.role==="TRAINER"){
-                        navigate("myclass")
+                        navigate("/myclass")
                     }
                 }
             })

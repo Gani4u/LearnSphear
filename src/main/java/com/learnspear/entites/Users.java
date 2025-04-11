@@ -6,9 +6,11 @@ import lombok.*;
 
 import java.time.LocalDateTime;
 import java.util.Date;
+import java.util.List;
 
 @Entity
 @Getter
+@Data
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
@@ -35,4 +37,7 @@ public class Users {
 
     @Column(nullable = false, updatable = false)
     private LocalDateTime created_at = LocalDateTime.now();
+
+    @OneToMany(mappedBy = "trainer_id", cascade = CascadeType.ALL)
+    private List<Courses> courses;
 }

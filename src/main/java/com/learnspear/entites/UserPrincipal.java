@@ -6,11 +6,11 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
+import java.util.Optional;
 
 public class UserPrincipal implements UserDetails {
 
-    private Users users;
+    private final Users users;
 
    public UserPrincipal(Users users){
        this.users = users;
@@ -18,7 +18,7 @@ public class UserPrincipal implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return Collections.singleton(new SimpleGrantedAuthority(users.getRole().name()));
+        return Collections.singleton(new SimpleGrantedAuthority("ROLE_"+users.getRole().name()));
     }
 
     @Override

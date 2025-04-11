@@ -13,12 +13,13 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.NoOpPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.stereotype.Component;
 
 @Configuration
 @EnableWebSecurity
+@Component
 public class SecurityConfig {
 
     @Autowired
@@ -32,8 +33,10 @@ public class SecurityConfig {
 
          return http.csrf(csrf->csrf.disable())
                 .authorizeHttpRequests(request-> request
-                        .requestMatchers("/register","/login")
-                        .permitAll()
+                        .requestMatchers("/register","/login").permitAll()
+                        .requestMatchers("/admin/**").hasRole("ADMIN") // Admin-only
+                        .requestMatchers("/student/**").hasAnyRole("STUDENT", "ADMIN") // Student + Admin
+                        .requestMatchers("/trainer/**").hasAnyRole("TRAINER", "ADMIN") // Trainer + Admin
                         .anyRequest().authenticated())
 
                 //.formLogin(Customizer.withDefaults())
