@@ -11,7 +11,7 @@ export const Login=()=>{
     
     const navigate=useNavigate();
     const location = useLocation();
-    const message = location.state?.message || ""; 
+    const message = location.state?.message || "";
         const [formData,setFormData]=useState({
             username:"",
             password:""
@@ -30,6 +30,7 @@ export const Login=()=>{
                         console.log(`lofin first ${data.user.role}`);
                         navigate("/mylearning");
                     }else if(data.user.role==="TRAINER"){
+                        navigate("/myclass")
                         console.log(`lofin first ${data.user.role}`);
                         navigate("myclass")
                     }
@@ -45,11 +46,11 @@ export const Login=()=>{
         <div className="login-container">
         <h2>login</h2>
 
-       
+
         {error && <p style={{ color: "red" }}>{error.message}</p>}
         {message && <p style={{ color: "red" }}>{message}</p>}
 
-        
+
         <form className="loginform" onSubmit={handlesubmit}>
             <input type="text" name="username" placeholder="username" onChange={handleChange} required />
             <input type="password" name="password" placeholder="password" onChange={handleChange} required />
