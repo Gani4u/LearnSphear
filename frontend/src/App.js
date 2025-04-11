@@ -9,6 +9,7 @@ import { Home } from './components/Home';
 import { Mycourse } from './components/Mycourse';
 import { Mylearning } from './components/Mylearning';
 import { Profile } from './components/Profile';
+import { Rolebaseroute } from './authpage/Rolebaseroute';
 
 
 
@@ -31,21 +32,37 @@ function App() {
       path:"/",
       element:<Topbar/>,
       children:[
-        {
-          path:"home",
-          element:<Home/>
+        { path: "home",
+          element: (
+            <Rolebaseroute roleallowed={["STUDENT", "TRAINER"]}>
+              <Home />
+            </Rolebaseroute>
+          ),
         },
       
         {
           path:"myclass",
-          element:<Mycourse/>
+
+          element:(
+         <Rolebaseroute roleallowed="TRAINER">
+         <Mycourse/>
+         </Rolebaseroute>
+          ),
         },
         {
           path:"mylearning",
-          element:<Mylearning/>
+          element: (
+            <Rolebaseroute roleallowed="STUDENT">
+            <Mylearning/>
+            </Rolebaseroute>
+             ),
         },
-        {path:"profile",
-          element:<Profile/>
+        { path: "profile",
+          element: (
+            <Rolebaseroute roleallowed={["STUDENT", "TRAINER"]}>
+              <Profile />
+            </Rolebaseroute>
+          ),
         }
 
 

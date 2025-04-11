@@ -30,9 +30,9 @@ export const Login=()=>{
                         console.log(`lofin first ${data.user.role}`);
                         navigate("/mylearning");
                     }else if(data.user.role==="TRAINER"){
-                        navigate("/myclass")
+
                         console.log(`lofin first ${data.user.role}`);
-                        navigate("myclass")
+                        navigate("/myclass")
                     }
                 }
             })

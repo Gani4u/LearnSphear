@@ -6,7 +6,13 @@ import { useSelector } from "react-redux";
 export const Head=()=>{
  
     
-    const role = useSelector((state) => state.auth.role); // ✅ Get role1
+    const user = useSelector((state) => state.auth.user); // ✅ Get role1
+   
+   
+
+const role = user?.role; // Safe access
+console.log(`this is head role ${role}`);
+
     return(
         <>
        <nav className="nav">
