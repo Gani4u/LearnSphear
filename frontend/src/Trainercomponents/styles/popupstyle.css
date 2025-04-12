@@ -1,0 +1,165 @@
+.popup-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    width: 100vw;
+    background-color: rgba(237, 241, 244, 0.5); /* dim background */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+  
+    /* Fade-in animation */
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease-in-out;
+  }
+  
+  .popup-overlay.show {
+    opacity: 1;
+    pointer-events: all;
+  }
+  
+  /* The actual white popup box */
+  .popup-container {
+    width: 80%;
+    max-height: 80%;
+    background-color: white;
+    padding: 2rem;
+    border-radius: 12px;
+    box-sizing: border-box;
+    overflow-y: auto;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 1.1);
+  
+    /* Slide from top animation */
+    transform: translateY(-30px);
+    opacity: 0;
+    transition: all 0.4s ease;
+  }
+  
+  .popup-overlay.show .popup-container {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  
+  /* Prevent background scroll */
+  body.popup-open {
+    overflow: hidden;
+  }
+  .button-cancle {
+    padding: 1px 1px;
+    position: absolute;
+    top: 1rem;
+    font-weight: 900;
+    right: 1rem;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    color: red;
+    font-size: 1.5rem;
+    z-index: 10;
+  
+  }
+  
+  .button-cancle:hover {
+    transform: scale(1.1);
+    color: darkred;
+    background-color: red;
+
+  }.formdiv {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+  
+  .forminput input,
+  .forminput textarea,
+  .forminput select {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    font-size: 1rem;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    outline: none;
+    transition: border-color 0.3s, box-shadow 0.3s;
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f9f9f9;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  transition: border-color 0.3s, box-shadow 0.3s;
+  }
+  
+  .forminput input:focus,
+  .forminput textarea:focus,
+  .forminput select:focus {
+    
+    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25);
+    background-color: #fff;
+    box-shadow: 0 2px 4px rgb(253, 12, 157); 
+  }
+  
+  .forminput textarea {
+    resize: vertical;
+    min-height: 100px;
+  }
+  
+  .file-upload {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+  
+  .file-upload input[type="file"] {
+    padding: 0.4rem;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    background-color: #fff;
+    cursor: pointer;
+  }
+  
+  .addbutton {
+    display: flex;
+    justify-content: center;
+  }
+  
+  .addbutton button[type="submit"] {
+    background-color: #6f42c1;
+    color: white;
+    padding: 0.6rem 1.5rem;
+    font-size: 1rem;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+  }
+  
+  .addbutton button[type="submit"]:hover {
+    background-color: #5a32a3;
+  }
+  .form-box {
+    background-color: #ffffff;
+    padding: 2rem;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5); /* 📦 Shadow effect */
+    display: flex;
+    flex-direction: column;
+    gap: 1rem; 
+    margin-top: 1rem;
+  }
+  .error {
+    color: red;
+    font-size: 0.9rem;
+    margin: 0.5rem 0;
+  }
+  .char-count {
+    font-size: 0.85rem;
+    color: #555;
+    margin-bottom: 10px;
+    text-align: right;
+  }
+  
+  .char-count.invalid {
+    color: red;
+    font-weight: 500;
+  }
+  

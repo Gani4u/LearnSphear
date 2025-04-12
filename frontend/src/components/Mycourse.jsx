@@ -1,5 +1,6 @@
 import { useState } from "react"
 import { Popup } from "../Trainercomponents/components/Popup";
+import '../Trainercomponents/styles/mycoursestyle.css'
 
 export const Mycourse=()=>{
     const [isPopup,setIspopup]=useState(false);
@@ -9,10 +10,15 @@ export const Mycourse=()=>{
     return(
         <>
         
-        <h1>mY course </h1>
-        <button onClick={popupopen}></button>
-        
+        <div className="mycourse-wrapper">
+        <div className="header-section">
+          <h1>My Course</h1>
+          <button className="openbtn" onClick={popupopen}>Add Course</button>
+        </div>
 
+    
+      </div>
+       
         {
             isPopup &&(
                 <Popup onclose={(popupclose)}>
