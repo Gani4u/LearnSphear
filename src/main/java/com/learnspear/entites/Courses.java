@@ -1,5 +1,6 @@
 package com.learnspear.entites;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -24,6 +25,7 @@ public class Courses {
     private String description;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "trainer_id", nullable = false)
-    private Users trainer_id;
+    @JoinColumn(name = "trainer_id", referencedColumnName = "id", nullable = false)
+    @JsonBackReference
+    private Users trainer;
 }

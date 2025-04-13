@@ -41,7 +41,6 @@ public class RegisterService {
     public ResponseEntity<?> verify(LoginRequestDto users) {
         Authentication authentication =
                 authManager.authenticate(new UsernamePasswordAuthenticationToken(users.getUsername(),users.getPassword()));
-
         if(authentication.isAuthenticated()){
             String token = jwtService.generateToken(users.getUsername());
             Optional<Users> user = userRepo.findByUsername(users.getUsername()); // or whatever you call it

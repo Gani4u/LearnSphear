@@ -11,10 +11,10 @@ export const Popup=({onclose,children})=>{
     const [popupinputdata,setPopupinputdata]=useState({
         title:"",
         description:"",
-        language:"",
-        instructorname:"",
-        video:null,
-        image:null
+//         language:"",
+//         instructorname:"",
+//         video:null,
+//         image:null
 });
  
 
@@ -32,12 +32,12 @@ const handlesubmit=(e)=>{
   const { title, description, language,  instructorname, video, image } = popupinputdata;
 
   // Validation
-  if (title.length < 4 || title.length > 15) {
+  if (title.length < 0 || title.length > 15) {
     setError("Title must be between 4 and 15 characters.");
     return;
   }
 
-  if (description.length < 50 || description.length > 100) {
+  if (description.length < 0 || description.length > 100) {
     setError("Description must be between 50 and 100 characters.");
     return;
   }
@@ -107,7 +107,7 @@ useEffect(() => {
 
                    <input type="text" name="title" placeholder="title" value={popupinputdata.title} onChange={handlechange} required />
                     <textarea type="text" name="description" placeholder="description" value={popupinputdata.description} onChange={handlechange} required />
-                    <p className={`char-count ${popupinputdata.description.length < 50 || popupinputdata.description.length > 100 ? 'invalid' : ''}`}>
+                    <p className={`char-count ${popupinputdata.description.length < 0 || popupinputdata.description.length > 100 ? 'invalid' : ''}`}>
                      {popupinputdata.description.length} / 100 characters </p>
 {/* 
                     <input type="text" name="language" placeholder="Language" value={popupinputdata.language} onChange={handlechange} required/>

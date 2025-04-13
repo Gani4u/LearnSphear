@@ -1,10 +1,14 @@
 package com.learnspear.Service;
 
+import com.learnspear.Repository.UserRepo;
+import com.learnspear.entites.UserPrincipal;
+import com.learnspear.entites.Users;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.KeyGenerator;
@@ -17,9 +21,13 @@ import java.util.function.Function;
 @Service
 public class JwtService {
 
+
     private String secretKey = "";
 
-    private JwtService(){
+    UserRepo userRepo;
+
+    private JwtService(UserRepo userRepo){
+        this.userRepo=userRepo;
        try {
            KeyGenerator keyGen = KeyGenerator.getInstance("HmacSHA256");
            SecretKey sk = keyGen.generateKey();
@@ -31,6 +39,9 @@ public class JwtService {
 
     public String generateToken(String username) {
         Map<String, Object> claims = new HashMap<>();
+        Users user = userRepo.findByUsername(username)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+        claims.put("role", "ROLE_" + user.getRole().name());
         return Jwts.builder()
                 .claims()
                 .add(claims)
@@ -52,7 +63,7 @@ public class JwtService {
         return extractClaim(token, Claims::getSubject);
     }
 
-    private <T> T extractClaim(String token, Function<Claims, T> claimsResolver){
+    public <T> T extractClaim(String token, Function<Claims, T> claimsResolver){
         final Claims claims = extractAllClaims(token);
         return claimsResolver.apply(claims);
     }

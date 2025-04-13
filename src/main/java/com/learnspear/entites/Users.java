@@ -1,5 +1,6 @@
 package com.learnspear.entites;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.learnspear.Enums.Role;
 import jakarta.persistence.*;
 import lombok.*;
@@ -38,6 +39,7 @@ public class Users {
     @Column(nullable = false, updatable = false)
     private LocalDateTime created_at = LocalDateTime.now();
 
-    @OneToMany(mappedBy = "trainer_id", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "trainer", cascade = CascadeType.ALL)
+    @JsonManagedReference
     private List<Courses> courses;
 }
