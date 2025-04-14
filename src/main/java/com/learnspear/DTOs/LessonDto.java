@@ -7,8 +7,8 @@ import lombok.*;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class CourseDTO {
-    private Long id;
+public class LessonDto {
     private String title;
-    private String description;
+    private String content;
+    private Integer sequence;
 }

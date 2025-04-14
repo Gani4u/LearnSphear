@@ -8,9 +8,12 @@ import com.learnspear.entites.Users;
 import lombok.Builder;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.security.Principal;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -41,6 +44,25 @@ public class CourseService {
 
         // Delete the course
         courseRepo.delete(course);
+    }
 
+    public CourseDTO convertToDto(Courses courses){
+        CourseDTO dto = new CourseDTO();
+        dto.setId(courses.getId());
+        dto.setTitle(courses.getTitle());
+        dto.setDescription(courses.getDescription());
+        return dto;
+    }
+
+    public List<CourseDTO> getCoursesByTrainer(Principal principal){
+        Users trainer = userRepo.findByUsername(principal.getName())
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+        List<Courses> courses = courseRepo.findByTrainer(trainer);
+        return courses.stream().map(this::convertToDto).collect(Collectors.toList());
+    }
+
+    public List<CourseDTO> getAllCourses() {
+        List<Courses> courses = courseRepo.findAll();
+        return courses.stream().map(course -> convertToDto(course)).collect(Collectors.toList());
     }
 }

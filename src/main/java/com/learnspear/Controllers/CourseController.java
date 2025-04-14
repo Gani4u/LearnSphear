@@ -9,6 +9,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
+import java.util.List;
 
 @RestController
 @RequestMapping("/trainer/courses")
@@ -30,5 +31,18 @@ public class CourseController {
     public ResponseEntity<?> deleteCourse(@PathVariable Long courseId, Principal principal){
         courseService.deleteCourse(courseId, principal);
         return ResponseEntity.ok("Course deleted successfully");
+    }
+
+    @PreAuthorize("hasRole('TRAINER')")
+    @GetMapping("/list")
+    public ResponseEntity<?> getCourses(Principal principal){
+        List<CourseDTO> courses = courseService.getCoursesByTrainer(principal);
+        return ResponseEntity.ok(courses);
+    }
+
+    @GetMapping("/allCourses")
+    public ResponseEntity<?> getAllCourses() {
+        List<CourseDTO> courses = courseService.getAllCourses();
+        return ResponseEntity.ok(courses);
     }
 }

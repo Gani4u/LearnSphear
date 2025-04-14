@@ -1,14 +1,17 @@
 package com.learnspear.entites;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Getter
 @Setter
 @Builder
-@Data
 @NoArgsConstructor
 @AllArgsConstructor
 @ToString
@@ -28,4 +31,8 @@ public class Courses {
     @JoinColumn(name = "trainer_id", referencedColumnName = "id", nullable = false)
     @JsonBackReference
     private Users trainer;
+
+    @OneToMany(mappedBy = "course", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
+    private List<Lessons> lessons = new ArrayList<>();
 }
