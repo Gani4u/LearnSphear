@@ -1,12 +1,12 @@
 package com.learnspear.entites;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.learnspear.Enums.Role;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
-import java.util.Date;
 import java.util.List;
 
 @Entity
@@ -42,4 +42,8 @@ public class Users {
     @OneToMany(mappedBy = "trainer", cascade = CascadeType.ALL)
     @JsonManagedReference
     private List<Courses> courses;
+
+    @OneToMany(mappedBy = "student", cascade = CascadeType.ALL)
+    @JsonIgnore
+    private List<Enrollment> enrollments;
 }
