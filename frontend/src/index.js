@@ -7,6 +7,8 @@ import reportWebVitals from './reportWebVitals';
 import { Provider } from "react-redux";
 import { store } from "./store/reduxstore";
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { injectStore } from './Api/globalapi';
+injectStore(store);
 
 const queryClient = new QueryClient();
 

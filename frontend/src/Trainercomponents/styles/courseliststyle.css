@@ -1,0 +1,29 @@
+.course_container{
+    padding: 20px;
+    
+}
+.course_list{
+    padding: 1rem;
+    border: 1px solid red;
+}
+.course_row{
+    padding: .5rem;
+
+   text-shadow: #e2e5e5;
+   color: brown;
+    margin: 5px;
+    background-color: #b5b4b2;
+    border-radius: 5px;
+   
+}
+.value {
+    width: 9rempx;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    gap: 1rem;
+    margin-right: 1rem;
+  }
+  .delete_button{
+   margin-right: 5px;
+  }

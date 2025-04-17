@@ -1,6 +1,7 @@
 import { useState } from "react"
 import { Popup } from "../Trainercomponents/components/Popup";
 import '../Trainercomponents/styles/mycoursestyle.css'
+import Courselist from "../Trainercomponents/components/Courselist";
 
 export const Mycourse=()=>{
     const [isPopup,setIspopup]=useState(false);
@@ -15,7 +16,7 @@ export const Mycourse=()=>{
           <h1>My Course</h1>
           <button className="openbtn" onClick={popupopen}>Add Course</button>
         </div>
-
+           <Courselist/>
     
       </div>
        
