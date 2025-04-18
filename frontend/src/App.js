@@ -10,6 +10,7 @@ import { Mycourse } from './components/Mycourse';
 import { Mylearning } from './components/Mylearning';
 import { Profile } from './components/Profile';
 import { Rolebaseroute } from './authpage/Rolebaseroute';
+import { AddLesson } from './Trainercomponents/components/AddLesson';
 
 
 
@@ -46,6 +47,15 @@ function App() {
           element:(
          <Rolebaseroute roleallowed="TRAINER">
          <Mycourse/>
+         </Rolebaseroute>
+          ),
+        },
+        {
+          path:"addlesson/:courseid",
+
+          element:(
+         <Rolebaseroute roleallowed="TRAINER">
+         <AddLesson/>
          </Rolebaseroute>
           ),
         },

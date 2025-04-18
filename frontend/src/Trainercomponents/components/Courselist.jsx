@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { Fetchcourselist } from "../Api/Fetchcourselist";
 import '../../Trainercomponents/styles/courseliststyle.css'
+import { useNavigate } from "react-router-dom";
 
 
 const Courselist=()=>{
@@ -8,6 +9,11 @@ const Courselist=()=>{
         queryKey: ['courses'],
         queryFn: Fetchcourselist,
       });
+
+       const navigate=useNavigate();
+      const handlegotolesson=(courseid)=>{
+        navigate(`/addlesson/${courseid}`);
+ }
     
     
      // const courses = data || []; // ✅ fallback to empty array if data is undefined
@@ -25,6 +31,8 @@ const Courselist=()=>{
                     <span className="value">{courses.title}</span>
                     <span className="value">{courses.description}</span>
                     <span><button className="delete_button" >delete</button></span>
+                    <span><button onClick={() => handlegotolesson(courses.id)}>Go to Lesson</button></span>
+
                 </div>
 
             ))}
