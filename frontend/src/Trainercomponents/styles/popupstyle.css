@@ -23,9 +23,9 @@
   
   /* The actual white popup box */
   .popup-container {
-    width: 80%;
+    width: 30%;
     max-height: 80%;
-    background-color: white;
+    background-color: rgba(255, 255, 255, 0.77);
     padding: 2rem;
     border-radius: 12px;
     box-sizing: border-box;

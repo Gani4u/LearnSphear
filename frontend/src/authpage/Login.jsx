@@ -12,6 +12,7 @@ export const Login=()=>{
     const navigate=useNavigate();
     const location = useLocation();
     const message = location.state?.message || "";
+    const sessionExpiredMessage = location.state?.sessionExpired || "";
         const [formData,setFormData]=useState({
             username:"",
             password:""
@@ -28,11 +29,11 @@ export const Login=()=>{
                     dispatch(loginSuccess({user:data.user,token:data.token}));
                     if(data.user.role==="STUDENT"){
                         console.log(`lofin first ${data.user.role}`);
-                        navigate("/mylearning");
+                        navigate("/mylearning", { replace: true });
                     }else if(data.user.role==="TRAINER"){
 
                         console.log(`lofin first ${data.user.role}`);
-                        navigate("/myclass")
+                    navigate("/myclass", { replace: true });
                     }
                 }
             })
@@ -49,6 +50,11 @@ export const Login=()=>{
 
         {error && <p style={{ color: "red" }}>{error.message}</p>}
         {message && <p style={{ color: "red" }}>{message}</p>}
+        {sessionExpiredMessage && (
+          <p style={{ color: "red" }}>
+            {sessionExpiredMessage || "Your session has expired. Please log in again."}
+          </p>
+        )}
 
 
         <form className="loginform" onSubmit={handlesubmit}>

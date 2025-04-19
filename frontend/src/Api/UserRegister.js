@@ -3,7 +3,7 @@
 // src/api/useRegister.js
 import { useMutation } from "@tanstack/react-query";
 
-const API_URL = "http://localhost:8080/register"; // Replace with actual
+const API_URL = "http://localhost:8080/register"; 
 
 export const useRegister = () => {    //useregister is a custome hook
   return useMutation({

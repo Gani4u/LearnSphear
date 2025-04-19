@@ -10,9 +10,13 @@ import { Mycourse } from './components/Mycourse';
 import { Mylearning } from './components/Mylearning';
 import { Profile } from './components/Profile';
 import { Rolebaseroute } from './authpage/Rolebaseroute';
-import 'bootstrap/dist/css/bootstrap.min.css';
-import 'bootstrap-icons/font/bootstrap-icons.css';
+//import 'bootstrap/dist/css/bootstrap.min.css';
+//import 'bootstrap-icons/font/bootstrap-icons.css';
 import { AddLesson } from './Trainercomponents/components/AddLesson';
+import { ViewLesson } from './Trainercomponents/components/ViewLesson';
+//import { ViewLesson } from './Trainercomponents/components/ViewLesson';
+import 'react-toastify/dist/ReactToastify.css';
+import { ToastContainer } from 'react-toastify';
 
 
 
@@ -54,13 +58,21 @@ function App() {
         },
         {
           path:"addlesson/:courseid",
-
           element:(
          <Rolebaseroute roleallowed="TRAINER">
          <AddLesson/>
          </Rolebaseroute>
           ),
         },
+        {
+          path: "viewlesson/:courseid",
+          element: (
+            <Rolebaseroute roleallowed="TRAINER">
+              <ViewLesson />
+            </Rolebaseroute>
+          ),
+        },
+        
         {
           path:"mylearning",
           element: (
@@ -93,6 +105,17 @@ function App() {
   return (
    <>
   <RouterProvider router={router}/>
+  <ToastContainer 
+      position="bottom-left"
+      autoClose={2000}
+      hideProgressBar={false}
+      newestOnTop={false}
+      closeOnClick
+      pauseOnFocusLoss
+      draggable
+      pauseOnHover
+      theme="dark"
+    />
    </>
   );
 }

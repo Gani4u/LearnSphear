@@ -1,11 +1,30 @@
 import { createSlice } from "@reduxjs/toolkit";
+// Helper function to check token validity
+const isTokenValid = (token) => {
+    if (!token) return false;
+  
+    // Example: Decode token (if JWT) and check expiration
+    const decodedToken = JSON.parse(atob(token.split('.')[1]));
+    const expirationTime = decodedToken.exp * 1000; 
+    return Date.now() < expirationTime; 
+  };
+
+const storedUser = JSON.parse(localStorage.getItem("user"));
+const storedToken = localStorage.getItem("token");
+
+if (!isTokenValid(storedToken)) {
+    localStorage.removeItem("user");
+    localStorage.removeItem("token");
+  }
+
 const authslice=createSlice( {
+
     name:"auth",
     initialState:{
-        user:null,   
-        token:null,
-        loading:false,
-        error:null,
+        user: storedUser || null,
+    token: storedToken || null,
+    loading: false,
+    error: null,
 
         
     },
@@ -13,11 +32,16 @@ const authslice=createSlice( {
         loginSuccess:(state,action)=>{
             state.user=action.payload.user;
             state.token=action.payload.token;
+            localStorage.setItem("user", JSON.stringify(action.payload.user));
+            localStorage.setItem("token", action.payload.token);
+           
         },
         logout:(state)=>{
             state.user=null;
             state.token=null;
-            //state.role=null;
+                
+      localStorage.removeItem("user");
+      localStorage.removeItem("token");
             
         }
     }

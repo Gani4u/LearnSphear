@@ -4,7 +4,7 @@ import '../pages/csspages/welcomestyle.css'
 export const Welcome=()=>{
     return(
         <>
-        <NavLink to="home">home</NavLink>  
+         
         <div className="welcome-container">
         <h1>hello Welcome page </h1>   
         
