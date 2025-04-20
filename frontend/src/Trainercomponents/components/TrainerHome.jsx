@@ -20,7 +20,10 @@ const TrainerHome=()=>{
           <li key={course.id}>
             <p>ID: {course.id}</p>
             <p>Title: {course.title}</p>
-            <img     src={"2e70a1dc-a680-4f63-8e1e-285aee465b38.jpg"} alt="course.title" />
+            <img src={`http://localhost:8080/images/${course.imageUrl}`}
+             alt="course.title"
+             style={{ width: "150px", height: "auto" }}
+             />
           </li>
         ))}
       </ul>
