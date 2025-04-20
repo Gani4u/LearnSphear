@@ -1,6 +1,7 @@
 package com.learnspear.Controllers;
 
 import com.learnspear.DTOs.CourseDTO;
+import com.learnspear.DTOs.CourseResponseDTO;
 import com.learnspear.Service.CourseService;
 import com.learnspear.entites.Courses;
 import lombok.RequiredArgsConstructor;
@@ -36,13 +37,13 @@ public class CourseController {
     @PreAuthorize("hasRole('TRAINER')")
     @GetMapping("/list")
     public ResponseEntity<?> getCourses(Principal principal){
-        List<CourseDTO> courses = courseService.getCoursesByTrainer(principal);
+        List<CourseResponseDTO> courses = courseService.getCoursesByTrainer(principal);
         return ResponseEntity.ok(courses);
     }
 
     @GetMapping("/allCourses")
     public ResponseEntity<?> getAllCourses() {
-        List<CourseDTO> courses = courseService.getAllCourses();
+        List<CourseResponseDTO> courses = courseService.getAllCourses();
         return ResponseEntity.ok(courses);
     }
 }

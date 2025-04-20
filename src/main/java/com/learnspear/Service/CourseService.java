@@ -1,6 +1,7 @@
 package com.learnspear.Service;
 
 import com.learnspear.DTOs.CourseDTO;
+import com.learnspear.DTOs.CourseResponseDTO;
 import com.learnspear.Repository.CourseRepo;
 import com.learnspear.Repository.UserRepo;
 import com.learnspear.entites.Courses;
@@ -59,22 +60,23 @@ public class CourseService {
         courseRepo.delete(course);
     }
 
-    public CourseDTO convertToDto(Courses courses){
-        CourseDTO dto = new CourseDTO();
+    public CourseResponseDTO convertToDto(Courses courses){
+        CourseResponseDTO dto = new CourseResponseDTO();
         dto.setId(courses.getId());
         dto.setTitle(courses.getTitle());
         dto.setDescription(courses.getDescription());
+        dto.setImageUrl(courses.getImageUrl());
         return dto;
     }
 
-    public List<CourseDTO> getCoursesByTrainer(Principal principal){
+    public List<CourseResponseDTO> getCoursesByTrainer(Principal principal){
         Users trainer = userRepo.findByUsername(principal.getName())
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
         List<Courses> courses = courseRepo.findByTrainer(trainer);
         return courses.stream().map(this::convertToDto).collect(Collectors.toList());
     }
 
-    public List<CourseDTO> getAllCourses() {
+    public List<CourseResponseDTO> getAllCourses() {
         List<Courses> courses = courseRepo.findAll();
         return courses.stream().map(course -> convertToDto(course)).collect(Collectors.toList());
     }
