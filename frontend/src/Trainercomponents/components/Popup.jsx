@@ -5,6 +5,13 @@ import { CiCircleRemove } from "react-icons/ci";
 
 
 export const Popup=({onclose,children})=>{
+  useEffect(() => {
+    document.body.style.overflow = 'hidden';  // Disable background scroll
+
+    return () => {
+      document.body.style.overflow = 'auto';  // Re-enable scroll on close
+    };
+  }, []);
     const { mutate } = useCourseadd(); 
     const [show,setShow] =useState(false);
     const [error, setError] = useState("");
@@ -14,7 +21,7 @@ export const Popup=({onclose,children})=>{
 //         language:"",
 //         instructorname:"",
 //         video:null,
-//         image:null
+           image:null
 });
  
 
@@ -57,10 +64,10 @@ const handlesubmit=(e)=>{
 //     return;
 //   }
 
-//   if (image && image.size > 1024 * 1024) {
-//     setError("Image file size should be less than 1MB.");
-//     return;
-//   }
+  if (image && image.size > 1024 * 1024) {
+    setError("Image file size should be less than 1MB.");
+    return;
+  }
 
   setError(""); // Clear errors
       
@@ -116,12 +123,12 @@ useEffect(() => {
                     <div className="file-upload">
                         <label htmlFor="video">📹 Select Course Video</label>
                            <input type="file" id="video" name="video" accept="video/*" onChange={handlechange} required />
-                       </div>
+                       </div> */}
 
-                     <div className="file-upload">
+                      <div className="file-upload">
                                 <label htmlFor="image">🖼️ Upload Course Thumbnail Image</label>
                                <input type="file" id="image" name="image" accept="image/*" onChange={handlechange} required />
-                     </div> */}
+                     </div>
                      {error && <p className="error">{error}</p>}
 
                     <div className="addbutton">

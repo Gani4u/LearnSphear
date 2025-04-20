@@ -7,6 +7,7 @@ import { toast } from 'react-toastify';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap-icons/font/bootstrap-icons.css';
 import { DeleteCourse } from "../Api/DeleteCourse";
+import React from "react";
 
 //import '../../Trainercomponents/styles/courseliststyle.css';
 
@@ -17,7 +18,7 @@ const Courselist=()=>{
     const { data, isLoading, isError, error } = useQuery({
         queryKey: ['courses'],
         queryFn: Fetchcourselist,
-        staleTime:1000*60*5,
+      //  staleTime:1000*60*5,
       });
       const navigate=useNavigate();
       const queryClient = useQueryClient();
@@ -104,4 +105,5 @@ const Courselist=()=>{
   );
 };
 
-export default Courselist;
+
+export default React.memo(Courselist);
