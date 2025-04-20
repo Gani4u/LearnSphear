@@ -11,6 +11,7 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
 import java.security.Principal;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -20,14 +21,26 @@ import java.util.stream.Collectors;
 public class CourseService {
     private final CourseRepo courseRepo;
     private final UserRepo userRepo;
+    private final FileStorageService fileStorageService;
 
     public Courses createCourse(CourseDTO courseDTO, Principal principal){
         Users trainer = userRepo.findByUsername(principal.getName())
                 .orElseThrow(() -> new RuntimeException(("User Not Found")));
 
+        String imageUrl = null;
+        if (courseDTO.getImage() != null && !courseDTO.getImage().isEmpty()) {
+            try {
+                imageUrl = fileStorageService.saveFile(courseDTO.getImage());
+            } catch (IOException e) {
+                throw new RuntimeException("Failed to store image", e);
+            }
+        }
+
+
         Courses courses = Courses.builder()
                 .title(courseDTO.getTitle())
                 .description(courseDTO.getDescription())
+                .imageUrl(imageUrl)
                 .trainer(trainer)
                 .build();
         return courseRepo.save(courses);

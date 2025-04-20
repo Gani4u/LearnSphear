@@ -21,7 +21,7 @@ public class CourseController {
 
     @PreAuthorize("hasRole('TRAINER')")
     @PostMapping("/create")
-    public ResponseEntity<?> createCourse(@RequestBody CourseDTO courseDTO, Principal principal){
+    public ResponseEntity<?> createCourse(@ModelAttribute CourseDTO courseDTO, Principal principal){
         Courses createdCourse = courseService.createCourse(courseDTO, principal);
         return ResponseEntity.ok("Course Created");
     }

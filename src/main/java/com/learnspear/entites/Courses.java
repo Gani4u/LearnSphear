@@ -27,6 +27,9 @@ public class Courses {
 
     private String description;
 
+    @Column(name = "image_url")
+    private String imageUrl;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "trainer_id", referencedColumnName = "id", nullable = false)
     @JsonBackReference
