@@ -4,8 +4,7 @@ import lombok.*;
 import org.springframework.web.multipart.MultipartFile;
 
 @Data
-@Getter
-@Setter
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class CourseDTO {

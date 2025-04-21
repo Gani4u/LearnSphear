@@ -1,10 +1,12 @@
 package com.learnspear.Controllers;
 
+import com.learnspear.DTOs.EnrollmentResponseDTO;
 import com.learnspear.Service.EnrollmentService;
 import com.learnspear.entites.Enrollment;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -20,13 +22,15 @@ public class EnrollmentController {
 
 
     @PostMapping("/{studentId}/courses/{courseId}/enroll")
+    @PreAuthorize("hasRole('STUDENT')")
     public ResponseEntity<String> enrollStudentInCourse(@PathVariable Long studentId, @PathVariable Long courseId){
         String message = enrollmentService.enrollStudent(studentId, courseId);
         return ResponseEntity.ok(message);
     }
 
     @GetMapping("/{studentId}")
-    public ResponseEntity<List<Enrollment>> getStudentEnrollments(@PathVariable Long studentId){
+    @PreAuthorize("hasRole('STUDENT')")
+    public ResponseEntity<List<EnrollmentResponseDTO>> getStudentEnrollments(@PathVariable Long studentId){
         return ResponseEntity.ok(enrollmentService.getEnrollmentsForStudent(studentId));
     }
 }

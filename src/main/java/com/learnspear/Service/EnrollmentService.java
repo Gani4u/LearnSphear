@@ -1,5 +1,9 @@
 package com.learnspear.Service;
 
+import com.learnspear.DTOs.CourseDTO;
+import com.learnspear.DTOs.CourseResponseDTO;
+import com.learnspear.DTOs.EnrollmentResponseDTO;
+import com.learnspear.DTOs.LessonDto;
 import com.learnspear.Repository.CourseRepo;
 import com.learnspear.Repository.EnrollmentRepo;
 import com.learnspear.Repository.UserRepo;
@@ -17,13 +21,8 @@ import java.util.List;
 @RequiredArgsConstructor
 public class EnrollmentService {
 
-    @Autowired
     private final EnrollmentRepo enrollmentRepo;
-
-    @Autowired
     private final UserRepo userRepo;
-
-    @Autowired
     private final CourseRepo courseRepo;
 
     public String enrollStudent(Long studentId, Long courseId){
@@ -45,9 +44,36 @@ public class EnrollmentService {
         return "Enrollment Done";
     }
 
-    public List<Enrollment> getEnrollmentsForStudent(Long studentId){
+
+    public List<EnrollmentResponseDTO> getEnrollmentsForStudent(Long studentId) {
         Users student = userRepo.findById(studentId)
                 .orElseThrow(() -> new RuntimeException("Student not found"));
-        return enrollmentRepo.findByStudent(student);
+
+        List<Enrollment> enrollments = enrollmentRepo.findByStudent(student);
+
+        return enrollments.stream().map(enrollment -> {
+            Courses course = enrollment.getCourse();
+
+            // Map lessons to DTOs
+            List<LessonDto> lessonDTOs = course.getLessons().stream().map(lesson -> LessonDto.builder()
+                    .title(lesson.getTitle())
+                    .content(lesson.getContent())
+                    .sequence(lesson.getSequence())
+                    .build()).toList();
+
+            CourseResponseDTO courseDTO = CourseResponseDTO.builder()
+                    .id(course.getId())
+                    .title(course.getTitle())
+                    .description(course.getDescription())
+                    .imageUrl(course.getImageUrl())
+                    .lessons(lessonDTOs)
+                    .build();
+
+            return EnrollmentResponseDTO.builder()
+                    .id(enrollment.getId())
+                    .enrollmentDate(enrollment.getEnrollmentDate())
+                    .course(courseDTO)
+                    .build();
+        }).toList();
     }
 }
