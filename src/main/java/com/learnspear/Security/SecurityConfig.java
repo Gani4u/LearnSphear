@@ -38,8 +38,8 @@ public class SecurityConfig {
                         .requestMatchers("/images/**").permitAll()
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers("/admin/**").hasRole("ADMIN") // Admin-only
-                        .requestMatchers("/student/**").hasAnyRole("STUDENT", "ADMIN") // Student + Admin
-                        .requestMatchers("/trainer/**").hasAnyRole("TRAINER", "ADMIN") // Trainer + Admin
+                        .requestMatchers("/student/**").hasAnyRole("STUDENT", "ADMIN", "TRAINER") // Student + Admin
+                        .requestMatchers("/trainer/**").hasAnyRole("TRAINER", "STUDENT","ADMIN") // Trainer + Admin
                         .anyRequest().authenticated())
 
                 //.formLogin(Customizer.withDefaults())

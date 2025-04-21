@@ -42,6 +42,7 @@ public class CourseController {
     }
 
     @GetMapping("/allCourses")
+    @PreAuthorize("hasRole('STUDENT')")
     public ResponseEntity<?> getAllCourses() {
         List<CourseResponseDTO> courses = courseService.getAllCourses();
         return ResponseEntity.ok(courses);
