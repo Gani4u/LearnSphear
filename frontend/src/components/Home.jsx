@@ -1,5 +1,6 @@
 import { useSelector } from "react-redux"
 import TrainerHome from "../Trainercomponents/components/TrainerHome";
+import StudentHome from "../Studentcomponents/components/StudentHome";
 
 export const Home=()=>{
     const user=useSelector((state)=>state.auth.user);
@@ -9,9 +10,11 @@ export const Home=()=>{
   
 {user && user.role === "STUDENT" && ( 
     <>
-
-    <p>hello student</p>
+     <StudentHome/>
+    
     </>)}
+
+
 {user && user.role === "TRAINER" && (
     <>
     <TrainerHome />

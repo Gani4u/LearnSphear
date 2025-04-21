@@ -66,7 +66,7 @@ if (isError) return <p>Error: {error.message}</p>;
                   <tr key={lesson.id}>
                     <td>{courseid || 'No course ID available'}</td>
                     <td>{lesson.title || 'No title available'}</td>
-                    <td>{lesson.content || 'No description available ok'}</td>
+                    <td>{lesson.description || 'No description available ok'}</td>
                     <td>{lesson.sequence || 'No sequence available'}</td>
                     <td>
                           <button onClick={()=>handleDeleteLesson(lesson.id)}

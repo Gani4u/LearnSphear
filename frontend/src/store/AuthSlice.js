@@ -6,6 +6,12 @@ const isTokenValid = (token) => {
     // Example: Decode token (if JWT) and check expiration
     const decodedToken = JSON.parse(atob(token.split('.')[1]));
     const expirationTime = decodedToken.exp * 1000; 
+    const expirationDate = new Date(expirationTime);
+
+    // Format the date
+    const formattedDate = expirationDate.toLocaleString();  // This gives a local date and time format
+    
+    console.log("Token expires at: ", formattedDate);
     return Date.now() < expirationTime; 
   };
 
