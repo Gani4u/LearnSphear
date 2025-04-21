@@ -37,13 +37,13 @@ const StudentHome=()=>{
       if (isError) return <p>Error: {error.message}</p>;
       console.log(data);
 
-      const handleEnrloment=(courseid)=>{
+      const handleEnrloment=(courseId)=>{
         if (!studentId) {
           toast.error("Student not logged in");
           return;
         }
-        console.log("id of 2 in handle enrloment",typeof(courseid),typeof(studentId));
-        enrlomentMUtation.mutate({ courseid, studentId });
+        console.log("id of 2 in handle enrloment",typeof(courseId),typeof(studentId));
+        enrlomentMUtation.mutate({ courseId, studentId });
 
       }
 
