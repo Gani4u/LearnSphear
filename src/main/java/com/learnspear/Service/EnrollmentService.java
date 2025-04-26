@@ -76,4 +76,18 @@ public class EnrollmentService {
                     .build();
         }).toList();
     }
+
+    public String unenrollStudent(Long studentId, Long courseId) {
+        Users student = userRepo.findById(studentId)
+                .orElseThrow(() -> new RuntimeException("Student not found"));
+
+        Courses course = courseRepo.findById(courseId)
+                .orElseThrow(() -> new RuntimeException("Course not found"));
+        Enrollment enrollment = enrollmentRepo.findByStudentAndCourse(student, course)
+                .orElseThrow(() -> new RuntimeException("Enrollment not found"));
+
+        enrollmentRepo.delete(enrollment);
+        return "Unenrollment successful";
+    }
+
 }

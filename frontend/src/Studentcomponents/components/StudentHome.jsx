@@ -1,6 +1,6 @@
 import React from "react";
 import { FetchAllCourse } from "../API/FetchAllCourse";
-import { QueryClient, useMutation, useQuery } from "@tanstack/react-query";
+import { QueryClient, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import '../../Trainercomponents/styles/tarinerhomestyle.css'
 import { Enrloment } from "../API/Enrloment";
 import { toast } from "react-toastify";
@@ -11,6 +11,7 @@ const StudentHome=()=>{
   console.log("user from redux in studenthome ",user);
   const studentId = user?.id;
   console.log("student id ",studentId);
+  const queryClient = useQueryClient();
 
     const { data, isLoading, isError, error } = useQuery({
         queryKey: ['courses'],
@@ -26,7 +27,7 @@ const StudentHome=()=>{
             autoClose: 2000,
             theme: "dark",
           });
-          QueryClient.invalidateQueries(['courses']);
+          queryClient.invalidateQueries({ queryKey: ['courses'] });
 
         },
         onError: (error) => {

@@ -33,4 +33,12 @@ public class EnrollmentController {
     public ResponseEntity<List<EnrollmentResponseDTO>> getStudentEnrollments(@PathVariable Long studentId){
         return ResponseEntity.ok(enrollmentService.getEnrollmentsForStudent(studentId));
     }
+
+    @DeleteMapping("/{studentId}/courses/{courseId}/unenroll")
+    @PreAuthorize("hasRole('STUDENT')")
+    public ResponseEntity<String> unenrollStudentFromCourse(@PathVariable Long studentId, @PathVariable Long courseId) {
+        String message = enrollmentService.unenrollStudent(studentId, courseId);
+        return ResponseEntity.ok(message);
+    }
+
 }
