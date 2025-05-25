@@ -14,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.security.Principal;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -45,8 +46,8 @@ public class EnrollmentService {
     }
 
 
-    public List<EnrollmentResponseDTO> getEnrollmentsForStudent(Long studentId) {
-        Users student = userRepo.findById(studentId)
+    public List<EnrollmentResponseDTO> getEnrollmentsForStudent(Principal principal) {
+        Users student = userRepo.findByUsername(principal.getName())
                 .orElseThrow(() -> new RuntimeException("Student not found"));
 
         List<Enrollment> enrollments = enrollmentRepo.findByStudent(student);

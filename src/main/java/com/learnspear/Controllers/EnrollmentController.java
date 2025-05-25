@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.security.Principal;
 import java.util.List;
 
 @RestController
@@ -28,10 +29,10 @@ public class EnrollmentController {
         return ResponseEntity.ok(message);
     }
 
-    @GetMapping("/{studentId}")
+    @GetMapping("/list")
     @PreAuthorize("hasRole('STUDENT')")
-    public ResponseEntity<List<EnrollmentResponseDTO>> getStudentEnrollments(@PathVariable Long studentId){
-        return ResponseEntity.ok(enrollmentService.getEnrollmentsForStudent(studentId));
+    public ResponseEntity<List<EnrollmentResponseDTO>> getStudentEnrollments(Principal principal){
+        return ResponseEntity.ok(enrollmentService.getEnrollmentsForStudent(principal));
     }
 
     @DeleteMapping("/{studentId}/courses/{courseId}/unenroll")
