@@ -1,22 +1,34 @@
-import { NavLink } from "react-router-dom"
-import '../pages/csspages/welcomestyle.css'
+// src/pages/Welcome.js
+import NavBar from "../components/NavBar";
+import  { useEffect } from 'react';
+import HeroSection from "../components/HeroSection";
+import Features from "../components/Features";
+import PopularCourses from "../components/PopularCourses";
+import Testimonials from "../components/Testimonials";
+import Newsletter from "../components/NewsLetters";
+import Footer from "../components/FooTer";
 
-export const Welcome=()=>{
-    return(
-        <>
-         
-        <div className="welcome-container">
-        <h1>hello Welcome page </h1>   
-        
-        <div className="welcome-button-container">
-        <NavLink to="register">
-            <button className="welcome-button">Register</button>
-          </NavLink>
-          <NavLink to="login">
-            <button className="welcome-button">Login</button>
-          </NavLink>
-        </div>
-        </div>
-        </>
-    )
-}
+export const Welcome = () => {
+  useEffect(() => {
+    document.body.style.backgroundColor = '#d8d8d8'; // Desired color
+
+    return () => {
+      document.body.style.backgroundColor = ''; // Reset on unmount
+    };
+  }, []);
+  return (
+    <>
+      <NavBar />
+      <HeroSection />
+      <Features />
+      <div id="popular-courses">
+      <PopularCourses />
+      </div>
+      <Testimonials />
+      <div id="contact">
+      <Newsletter />
+      </div>
+      <Footer />
+    </>
+  );
+};
