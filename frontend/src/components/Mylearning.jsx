@@ -1,8 +1,11 @@
+import StudentEnrlomentLIst from "../Studentcomponents/components/StudentEnrlomentLIst"
+
 export const Mylearning=()=>{
     return(
         <>
         
-        <h1>hello my learning page </h1>
+       
+        <StudentEnrlomentLIst/>
         </>
     )
 }

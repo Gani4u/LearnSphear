@@ -17,6 +17,7 @@ import { ViewLesson } from './Trainercomponents/components/ViewLesson';
 //import { ViewLesson } from './Trainercomponents/components/ViewLesson';
 import 'react-toastify/dist/ReactToastify.css';
 import { ToastContainer } from 'react-toastify';
+import { ViewEnrlomentList } from './Studentcomponents/components/ViewEnrolmentList';
 
 
 
@@ -69,6 +70,15 @@ function App() {
           element: (
             <Rolebaseroute roleallowed="TRAINER">
               <ViewLesson />
+            </Rolebaseroute>
+          ),
+        },
+
+        {
+          path: "viewenrlomentlist/:courseid",
+          element: (
+            <Rolebaseroute roleallowed="STUDENT">
+              <ViewEnrlomentList/>
             </Rolebaseroute>
           ),
         },

@@ -1,23 +1,25 @@
 import React from "react";
 import { FetchAllCourse } from "../API/FetchAllCourse";
-import { QueryClient, useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import '../../Trainercomponents/styles/tarinerhomestyle.css'
 import { Enrloment } from "../API/Enrloment";
 import { toast } from "react-toastify";
 import { useSelector } from "react-redux";
 
 const StudentHome=()=>{
+
+  const queryClient = useQueryClient();
   const user = useSelector((state) => state.auth.user);
-  console.log("user from redux in studenthome ",user);
   const studentId = user?.id;
-  console.log("student id ",studentId);
+
 
     const { data, isLoading, isError, error } = useQuery({
         queryKey: ['courses'],
         queryFn: FetchAllCourse,
         //staleTime:1000*60*5,
       });
-     console.log("course id in data.id ",data);
+
+     
       const enrlomentMUtation = useMutation({
         mutationFn:Enrloment ,
         onSuccess: () => {
@@ -26,23 +28,23 @@ const StudentHome=()=>{
             autoClose: 2000,
             theme: "dark",
           });
-          QueryClient.invalidateQueries(['courses']);
+          queryClient.invalidateQueries(['courses']);
 
         },
         onError: (error) => {
           toast.error(`Failed to Enrole: ${error.message}`);
         },
       });
+
       if (isLoading) return <p>Loading courses...</p>;
       if (isError) return <p>Error: {error.message}</p>;
-      console.log(data);
+     
 
       const handleEnrloment=(courseId)=>{
         if (!studentId) {
           toast.error("Student not logged in");
           return;
         }
-        console.log("id of 2 in handle enrloment",typeof(courseId),typeof(studentId));
         enrlomentMUtation.mutate({ courseId, studentId });
 
       }
