@@ -68,12 +68,27 @@ const handleSubmit = (e) => {
     return(
         <>
           
-        <div className="reg-container">
-      <h2>Register</h2>
+       <div
+         className="reg-container"
+         style={{
+           backgroundImage: "url('/assets/images/register.jpg')",
+           backgroundSize: "cover",
+           backgroundPosition: "center",
+           backgroundRepeat: "no-repeat",
+           height: "100vh",
+           display: "flex",
+           flexDirection: "column",
+           alignItems: "center",
+           justifyContent: "center",
+         }}
+       >
+
+
       {formError && <p style={{ color: "red" }}>{formError}</p>}
       {error && <p style={{ color: "red" }}>{error.message}</p>}
 
       <form className="classform" onSubmit={handleSubmit}>
+           <h2 style={{ alignItems: "center",justifyContent: "center"}}>Register</h2>
         <input name="username" placeholder="Username" onChange={handleChange} required />
         <input name="email" type="email" placeholder="Email" onChange={handleChange} required />
         <input name="password" type="password" placeholder="Password" onChange={handleChange} required />

@@ -44,9 +44,22 @@ export const Login=()=>{
         <>
         
        
-        <div className="login-container">
-        <h2>login</h2>
+        <div className="login-container"
+         style={{
+                   backgroundImage: "url('/assets/images/register.jpg')",
+                   backgroundSize: "cover",
+                   backgroundPosition: "center",
+                   backgroundRepeat: "no-repeat",
+                   height: "100vh",
+                   display: "flex",
+                   flexDirection: "column",
+                   alignItems: "center",
+                   justifyContent: "center",
+                 }}>
 
+
+        <h2>login</h2>
+ <form className="loginform" onSubmit={handlesubmit}>
 
         {error && <p style={{ color: "red" }}>{error.message}</p>}
         {message && <p style={{ color: "red" }}>{message}</p>}
@@ -57,7 +70,7 @@ export const Login=()=>{
         )}
 
 
-        <form className="loginform" onSubmit={handlesubmit}>
+
             <input type="text" name="username" placeholder="username" onChange={handleChange} required />
             <input type="password" name="password" placeholder="password" onChange={handleChange} required />
 

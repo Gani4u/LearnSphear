@@ -67,7 +67,7 @@ function App() {
         {
           path: "viewlesson/:courseid",
           element: (
-            <Rolebaseroute roleallowed="TRAINER">
+            <Rolebaseroute roleallowed={["STUDENT","TRAINER"]}>
               <ViewLesson />
             </Rolebaseroute>
           ),

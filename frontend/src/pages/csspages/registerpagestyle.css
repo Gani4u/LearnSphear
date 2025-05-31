@@ -6,6 +6,7 @@
     justify-content: center;
     height: 100vh;
 
+
   }
 
  .reg-container input,
@@ -24,8 +25,8 @@
   .reg-container input:focus,
   .reg-container select:focus {
     outline: none;
-    border-color: #6f42c1; 
-    box-shadow: 0 2px 4px rgb(253, 12, 157); 
+    border-color: blue;
+    box-shadow: 0 2px 4px rgba(0, 0, 255, 0.9);
     transform: scale(1.03); 
   }
   
