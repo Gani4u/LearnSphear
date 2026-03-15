@@ -1,7 +1,6 @@
 package com.learnspear.Controllers;
 
 import com.learnspear.DTOs.LoginRequestDto;
-import com.learnspear.Service.JwtService;
 import com.learnspear.Service.RegisterService;
 import com.learnspear.entites.Users;
 import org.springframework.beans.factory.annotation.Autowired;

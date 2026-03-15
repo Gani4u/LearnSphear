@@ -1,14 +1,8 @@
 import { useState } from "react";
-//import { useDispatch } from "react-redux";
 import { useRegister } from "../Api/UserRegister";
 
-import { useNavigate } from "react-router-dom";
-//import { loginSuccess } from "../store/AuthSlice";
-import '../pages/csspages/registerpagestyle.css'
-
-export const Registerpage=()=>{
+export const Registerpage = ({ onSuccess, onSwitch }) => {
     //const dispatch = useDispatch();
-const navigate = useNavigate();
 const { mutate, isPending, error } = useRegister();
 
 const [formData, setFormData] = useState({
@@ -59,51 +53,60 @@ const handleSubmit = (e) => {
   // Call API
   mutate(formData, {
     onSuccess: (data) => {
-      //dispatch(loginSuccess({ user: data.user, token: data.token }));  this line is used to send data to redux store
-      alert("Registration Successful!");
-      navigate("/login");
+      onSuccess?.();
     },
   });
 };
-    return(
-        <>
-          
-       <div
-         className="reg-container"
-         style={{
-           backgroundImage: "url('/assets/images/register.jpg')",
-           backgroundSize: "cover",
-           backgroundPosition: "center",
-           backgroundRepeat: "no-repeat",
-           height: "100vh",
-           display: "flex",
-           flexDirection: "column",
-           alignItems: "center",
-           justifyContent: "center",
-         }}
-       >
+  return (
+    <div className="auth-form">
+      <form onSubmit={handleSubmit}>
+        <h2>Create your account</h2>
 
+        {formError && <p className="error">{formError}</p>}
+        {error && <p className="error">{error.message}</p>}
 
-      {formError && <p style={{ color: "red" }}>{formError}</p>}
-      {error && <p style={{ color: "red" }}>{error.message}</p>}
-
-      <form className="classform" onSubmit={handleSubmit}>
-           <h2 style={{ alignItems: "center",justifyContent: "center"}}>Register</h2>
-        <input name="username" placeholder="Username" onChange={handleChange} required />
-        <input name="email" type="email" placeholder="Email" onChange={handleChange} required />
-        <input name="password" type="password" placeholder="Password" onChange={handleChange} required />
-{/*         <input name="confirmPassword" type="password" placeholder="Re-enter Password" onChange={handleChange} required /> */}
-{/*         <input name="phone" placeholder="Phone" onChange={handleChange} required /> */}
-        <select name="role" onChange={handleChange} required>
+        <input
+          name="username"
+          placeholder="Username"
+          value={formData.username}
+          onChange={handleChange}
+          required
+        />
+        <input
+          name="email"
+          type="email"
+          placeholder="Email"
+          value={formData.email}
+          onChange={handleChange}
+          required
+        />
+        <input
+          name="password"
+          type="password"
+          placeholder="Password"
+          value={formData.password}
+          onChange={handleChange}
+          required
+        />
+        <select name="role" value={formData.role} onChange={handleChange} required>
           <option value="">Select Role</option>
           <option value="STUDENT">Student</option>
           <option value="TRAINER">Instructor</option>
         </select>
-        <button type="submit" disabled={isPending}>
+
+        <button className="btn btn-primary" type="submit" disabled={isPending}>
           {isPending ? "Registering..." : "Register"}
         </button>
+
+        <div className="form-footer">
+          <p>
+            Already have an account?{' '}
+            <button type="button" className="btn btn-secondary" onClick={onSwitch}>
+              Login
+            </button>
+          </p>
+        </div>
       </form>
-    </div>   
-        </>
-    )
+    </div>
+  );
 }

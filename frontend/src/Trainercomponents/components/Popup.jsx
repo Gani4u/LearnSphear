@@ -1,31 +1,28 @@
-import { useEffect, useState } from "react"
+import { useEffect, useState } from "react";
 import { useCourseadd } from "../Api/useCourseadd";
-import '../../Trainercomponents/styles/popupstyle.css'
 import { CiCircleRemove } from "react-icons/ci";
 
+export const Popup = ({ onclose }) => {
+  const { mutate } = useCourseadd();
+  const [show, setShow] = useState(false);
+  const [error, setError] = useState("");
+  const [popupinputdata, setPopupinputdata] = useState({
+    title: "",
+    description: "",
+    image: null,
+  });
 
-export const Popup=({onclose,children})=>{
   useEffect(() => {
-    document.body.style.overflow = 'hidden';  // Disable background scroll
+    document.body.style.overflow = "hidden";
+    const timer = setTimeout(() => setShow(true), 10);
 
     return () => {
-      document.body.style.overflow = 'auto';  // Re-enable scroll on close
+      document.body.style.overflow = "auto";
+      clearTimeout(timer);
     };
   }, []);
-    const { mutate } = useCourseadd(); 
-    const [show,setShow] =useState(false);
-    const [error, setError] = useState("");
-    const [popupinputdata,setPopupinputdata]=useState({
-        title:"",
-        description:"",
-//         language:"",
-//         instructorname:"",
-//         video:null,
-           image:null
-});
- 
 
-const handlechange=(e)=>{
+  const handlechange = (e) => {
     const { name, value, files } = e.target;
     if (files) {
       setPopupinputdata({ ...popupinputdata, [name]: files[0] }); // for file
@@ -36,7 +33,7 @@ const handlechange=(e)=>{
 const handlesubmit=(e)=>{
       e.preventDefault();
       
-  const { title, description, language,  instructorname, video, image } = popupinputdata;
+  const { title, description, image } = popupinputdata;
 
   // Validation
   if (title.length < 0 || title.length > 15) {
@@ -100,54 +97,63 @@ useEffect(() => {
     };
   }, []);
 
- return(
-        <> 
-         <div className={`popup-overlay ${show ? "show" : ""}`}>
-        <div className="popup-container">
-
-            <div className="cancle-button">
-            <button className="button-cancle" onClick={onclose}> <CiCircleRemove  size={28}/> </button>
-            </div>
-            <div className="formdiv">
-            <form className="forminput" onSubmit={handlesubmit}>
-            <div className="form-box">
-
-                   <input type="text" name="title" placeholder="title" value={popupinputdata.title} onChange={handlechange} required />
-                    <textarea type="text" name="description" placeholder="description" value={popupinputdata.description} onChange={handlechange} required />
-                    <p className={`char-count ${popupinputdata.description.length < 0 || popupinputdata.description.length > 100 ? 'invalid' : ''}`}>
-                     {popupinputdata.description.length} / 100 characters </p>
-{/* 
-                    <input type="text" name="language" placeholder="Language" value={popupinputdata.language} onChange={handlechange} required/>
-                    <input type="text" name="instructorname" placeholder="Enter Trainer Name" value={popupinputdata.instructorname} onChange={handlechange} required/>
-                    <label htmlFor="video">Upload Course Video:</label>
-                    <div className="file-upload">
-                        <label htmlFor="video">📹 Select Course Video</label>
-                           <input type="file" id="video" name="video" accept="video/*" onChange={handlechange} required />
-                       </div> */}
-
-                      <div className="file-upload">
-                                <label htmlFor="image">🖼️ Upload Course Thumbnail Image</label>
-                               <input type="file" id="image" name="image" accept="image/*" onChange={handlechange} required />
-                     </div>
-                     {error && <p className="error">{error}</p>}
-
-                    <div className="addbutton">
-                    <button type="submit">Click</button>
-
-
-            </div>
-            </div>
-            </form>
-
-            </div>
-           
-        </div>
-   
+ return (
+    <div className={`modal-overlay ${show ? "open" : ""}`} onClick={onclose}>
+      <div className={`modal ${show ? "open" : ""}`} onClick={(e) => e.stopPropagation()}>
+        <div className="modal__header">
+          <h3 className="modal__title">Create new course</h3>
+          <button className="modal__close" onClick={onclose} aria-label="Close">
+            <CiCircleRemove size={24} />
+          </button>
         </div>
 
-        </>
-    )
-}
+        <form className="auth-form" onSubmit={handlesubmit}>
+          <input
+            type="text"
+            name="title"
+            placeholder="Title"
+            value={popupinputdata.title}
+            onChange={handlechange}
+            required
+          />
+          <textarea
+            name="description"
+            placeholder="Description"
+            value={popupinputdata.description}
+            onChange={handlechange}
+            required
+          />
+          <p className={`char-count ${
+            popupinputdata.description.length < 0 || popupinputdata.description.length > 100
+              ? "invalid"
+              : ""
+          }`}
+          >
+            {popupinputdata.description.length} / 100 characters
+          </p>
+
+          <div className="file-upload">
+            <label htmlFor="image">🖼️ Upload course thumbnail</label>
+            <input
+              type="file"
+              id="image"
+              name="image"
+              accept="image/*"
+              onChange={handlechange}
+              required
+            />
+          </div>
+
+          {error && <p className="error">{error}</p>}
+
+          <button className="btn btn-primary" type="submit">
+            Add Course
+          </button>
+        </form>
+      </div>
+    </div>
+  );
+};
      
 
 

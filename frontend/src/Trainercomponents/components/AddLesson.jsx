@@ -1,7 +1,6 @@
 import { useState } from "react";
-import { useNavigate, useParams } from "react-router-dom"
+import { useNavigate, useParams } from "react-router-dom";
 import { useAddLesson } from "../Api/useAddLesson";
-import '../styles/addlessonstyle.css'
 
 export const AddLesson=()=>{
     const [lessonData, setLessonData] = useState({

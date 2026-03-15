@@ -1,7 +1,6 @@
 import React from "react";
 import { FetchAllCourse } from "../API/FetchAllCourse";
-import { QueryClient, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import '../../Trainercomponents/styles/tarinerhomestyle.css'
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Enrloment } from "../API/Enrloment";
 import { toast } from "react-toastify";
 import { useSelector } from "react-redux";

@@ -1,12 +1,10 @@
-import { useState } from "react"
+import { useState } from "react";
 import { Popup } from "../Trainercomponents/components/Popup";
-import '../Trainercomponents/styles/mycoursestyle.css'
 import Courselist from "../Studentcomponents/components/EnrolledCourses";
 
 export const Mylearning=()=>{
     const [isPopup,setIspopup]=useState(false);
     
-    const popupopen=()=>setIspopup(true);
     const popupclose=()=>setIspopup(false);
     return(
         <>

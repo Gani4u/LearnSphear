@@ -1,6 +1,5 @@
-import { useState } from "react"
+import { useState } from "react";
 import { Popup } from "../Trainercomponents/components/Popup";
-import '../Trainercomponents/styles/mycoursestyle.css'
 import Courselist from "../Trainercomponents/components/Courselist";
 
 export const Mycourse=()=>{

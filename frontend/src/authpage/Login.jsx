@@ -1,12 +1,11 @@
 import { useState } from "react";
-import {  useDispatch, useSelector } from "react-redux";
-import '../pages/csspages/loginstyle.css'
-import { useLocation, useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useLogin } from "../Api/useLogin";
 import { loginSuccess } from "../store/AuthSlice";
 
 
-export const Login=()=>{
+export const Login = ({ onSuccess, onSwitch }) => {
     
     
     const navigate=useNavigate();
@@ -22,60 +21,61 @@ export const Login=()=>{
         const handleChange=(e)=>{
             setFormData({...formData,[e.target.name]:e.target.value});
         }
-        const handlesubmit=(e)=>{
+        const handlesubmit = (e) => {
             e.preventDefault();
-            mutate(formData,{
-                onSuccess:(data)=>{
-                    dispatch(loginSuccess({user:data.user,token:data.token}));
-                    if(data.user.role==="STUDENT"){
-                        console.log(`lofin first ${data.user.role}`);
+            mutate(formData, {
+                onSuccess: (data) => {
+                    dispatch(loginSuccess({ user: data.user, token: data.token }));
+                    onSuccess?.();
+                    if (data.user.role === "STUDENT") {
                         navigate("/mylearning", { replace: true });
-                    }else if(data.user.role==="TRAINER"){
-
-                        console.log(`lofin first ${data.user.role}`);
-                    navigate("/myclass", { replace: true });
+                    } else if (data.user.role === "TRAINER") {
+                        navigate("/myclass", { replace: true });
                     }
-                }
-            })
-
+                },
+            });
         }
 
     return(
         <>
         
        
-        <div className="login-container"
-         style={{
-                   backgroundImage: "url('/assets/images/register.jpg')",
-                   backgroundSize: "cover",
-                   backgroundPosition: "center",
-                   backgroundRepeat: "no-repeat",
-                   height: "100vh",
-                   display: "flex",
-                   flexDirection: "column",
-                   alignItems: "center",
-                   justifyContent: "center",
-                 }}>
+        <div className="auth-form">
+          <form onSubmit={handlesubmit}>
+            {error && <p className="error">{error.message}</p>}
+            {message && <p className="error">{message}</p>}
+            {sessionExpiredMessage && <p className="error">{sessionExpiredMessage}</p>}
 
+            <input
+              type="text"
+              name="username"
+              placeholder="Username"
+              value={formData.username}
+              onChange={handleChange}
+              required
+            />
+            <input
+              type="password"
+              name="password"
+              placeholder="Password"
+              value={formData.password}
+              onChange={handleChange}
+              required
+            />
 
-        <h2>login</h2>
- <form className="loginform" onSubmit={handlesubmit}>
+            <button className="btn btn-primary" type="submit" disabled={isPending}>
+              {isPending ? "Logging in..." : "Login"}
+            </button>
 
-        {error && <p style={{ color: "red" }}>{error.message}</p>}
-        {message && <p style={{ color: "red" }}>{message}</p>}
-        {sessionExpiredMessage && (
-          <p style={{ color: "red" }}>
-            {sessionExpiredMessage || "Your session has expired. Please log in again."}
-          </p>
-        )}
-
-
-
-            <input type="text" name="username" placeholder="username" onChange={handleChange} required />
-            <input type="password" name="password" placeholder="password" onChange={handleChange} required />
-
-            <button className="login-container-button" type="submit" disabled={isPending}>{isPending?"logging...":"login"}</button>
-        </form>
+            <div className="form-footer">
+              <p>
+                New here?{' '}
+                <button type="button" className="btn btn-secondary" onClick={onSwitch}>
+                  Create account
+                </button>
+              </p>
+            </div>
+          </form>
         </div>
 
 

@@ -1,6 +1,6 @@
-import { QueryClient, useMutation, useQueryClient } from "@tanstack/react-query"
+import { useMutation, useQueryClient } from "@tanstack/react-query"
 
-import { useSelector, useDispatch } from "react-redux"; // ✅
+import { useSelector } from "react-redux"; // ✅
 
 import axios from "axios";
 

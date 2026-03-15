@@ -2,11 +2,12 @@ package com.learnspear.Service;
 
 import com.learnspear.DTOs.CourseDTO;
 import com.learnspear.DTOs.CourseResponseDTO;
+import com.learnspear.DTOs.LessonDto;
+import com.learnspear.DTOs.StudentDTO;
 import com.learnspear.Repository.CourseRepo;
 import com.learnspear.Repository.UserRepo;
 import com.learnspear.entites.Courses;
 import com.learnspear.entites.Users;
-import lombok.Builder;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -23,6 +24,7 @@ public class CourseService {
     private final CourseRepo courseRepo;
     private final UserRepo userRepo;
     private final FileStorageService fileStorageService;
+    private final EnrollmentService enrollmentService;
 
     public Courses createCourse(CourseDTO courseDTO, Principal principal){
         Users trainer = userRepo.findByUsername(principal.getName())
@@ -66,6 +68,7 @@ public class CourseService {
         dto.setTitle(courses.getTitle());
         dto.setDescription(courses.getDescription());
         dto.setImageUrl(courses.getImageUrl());
+        dto.setTrainerName(courses.getTrainer() != null ? courses.getTrainer().getUsername() : null);
         return dto;
     }
 
@@ -79,5 +82,23 @@ public class CourseService {
     public List<CourseResponseDTO> getAllCourses() {
         List<Courses> courses = courseRepo.findAll();
         return courses.stream().map(course -> convertToDto(course)).collect(Collectors.toList());
+    }
+
+    public CourseResponseDTO getCourseDetails(Long courseId) {
+        Courses course = courseRepo.findById(courseId)
+                .orElseThrow(() -> new RuntimeException("Course not found"));
+
+        CourseResponseDTO dto = convertToDto(course);
+        // include lessons in course detail
+        dto.setLessons(course.getLessons().stream().map(lesson -> LessonDto.builder()
+                .title(lesson.getTitle())
+                .content(lesson.getContent())
+                .sequence(lesson.getSequence())
+                .build()).toList());
+        return dto;
+    }
+
+    public List<StudentDTO> getStudentsForCourse(Long courseId, Principal principal) {
+        return enrollmentService.getStudentsForCourse(courseId, principal);
     }
 }
