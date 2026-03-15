@@ -14,6 +14,16 @@ const Courselist=()=>{
         queryFn: fetchEnrolledCourse,
       //  staleTime:1000*60*5,
       });
+
+ React.useEffect(() => {
+   if (data && !isLoading) {
+     console.log("Fetched enrolled courses:", data);
+   }
+ }, [data, isLoading]);
+
+const courses = data || [];
+
+
       const navigate=useNavigate();
 
     //   const deleteMutation = useMutation({
@@ -73,19 +83,20 @@ const Courselist=()=>{
             </tr>
           </thead>
           <tbody>
-            {data.map((enrollment) => (
+            {courses.map((enrollment) => (
+
               <tr key={enrollment.id}>
-                <td>{enrollment.course.id}</td>
-                <td>{enrollment.course.title}</td>
-                <td>{enrollment.course.description}</td>
+                <td>{enrollment.course?.id}</td>
+                <td>{enrollment.course?.title}</td>
+                <td>{enrollment.course?.description}</td>
                 <td className="text-center">
-                 {/* <button onClick={()=>handleDelete(course.id)} className="btn btn-sm btn-outline-danger me-2" title="Delete">
+                 {/* <button onClick={()=>handleDelete(course.id)} clnpm startassName="btn btn-sm btn-outline-danger me-2" title="Delete">
                    <i className="bi bi-trash"></i>
                  </button> */}
                  {/* <button className="btn btn-sm btn-outline-primary me-2" title="Add Lesson"
                     onClick={() => handlegotolesson(course.id)} >
                 <i className="bi bi-plus-circle"></i> </button> */}
-                  <button className="btn btn-sm btn-outline-secondary" title="View"  onClick={() => handleview(enrollment.course.id)} > <i className="bi bi-eye"></i>
+                  <button className="btn btn-sm btn-outline-secondary" title="View"  onClick={() => handleview(enrollment.course?.id)} > <i className="bi bi-eye"></i>
                    </button>
                </td>
 
