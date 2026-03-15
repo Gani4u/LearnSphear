@@ -37,9 +37,11 @@ public class Courses {
 
     @OneToMany(mappedBy = "course", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonIgnore
+    @Builder.Default
     private List<Lessons> lessons = new ArrayList<>();
 
     @OneToMany(mappedBy = "course", cascade = CascadeType.ALL)
     @JsonIgnore
-    private List<Enrollment> enrolledStudent;
+    @Builder.Default
+    private List<Enrollment> enrolledStudent = new ArrayList<>();
 }

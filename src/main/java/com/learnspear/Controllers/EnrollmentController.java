@@ -2,7 +2,6 @@ package com.learnspear.Controllers;
 
 import com.learnspear.DTOs.EnrollmentResponseDTO;
 import com.learnspear.Service.EnrollmentService;
-import com.learnspear.entites.Enrollment;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;

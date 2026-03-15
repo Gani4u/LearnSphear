@@ -41,10 +41,22 @@ public class CourseController {
         return ResponseEntity.ok(courses);
     }
 
+    @GetMapping("/{courseId}")
+    public ResponseEntity<?> getCourseDetails(@PathVariable Long courseId) {
+        CourseResponseDTO course = courseService.getCourseDetails(courseId);
+        return ResponseEntity.ok(course);
+    }
+
     @GetMapping("/allCourses")
     @PreAuthorize("hasRole('STUDENT')")
     public ResponseEntity<?> getAllCourses() {
         List<CourseResponseDTO> courses = courseService.getAllCourses();
         return ResponseEntity.ok(courses);
+    }
+
+    @GetMapping("/{courseId}/students")
+    @PreAuthorize("hasRole('TRAINER')")
+    public ResponseEntity<?> getStudentsInCourse(@PathVariable Long courseId, Principal principal) {
+        return ResponseEntity.ok(courseService.getStudentsForCourse(courseId, principal));
     }
 }

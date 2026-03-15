@@ -4,6 +4,7 @@ import com.learnspear.DTOs.CourseDTO;
 import com.learnspear.DTOs.CourseResponseDTO;
 import com.learnspear.DTOs.EnrollmentResponseDTO;
 import com.learnspear.DTOs.LessonDto;
+import com.learnspear.DTOs.StudentDTO;
 import com.learnspear.Repository.CourseRepo;
 import com.learnspear.Repository.EnrollmentRepo;
 import com.learnspear.Repository.UserRepo;
@@ -91,4 +92,21 @@ public class EnrollmentService {
         return "Unenrollment successful";
     }
 
+    public List<StudentDTO> getStudentsForCourse(Long courseId, Principal principal) {
+        Courses course = courseRepo.findById(courseId)
+                .orElseThrow(() -> new RuntimeException("Course not found"));
+
+        // Only the trainer who owns the course can see enrolled students
+        if (!course.getTrainer().getUsername().equals(principal.getName())) {
+            throw new RuntimeException("Access denied");
+        }
+
+        return enrollmentRepo.findByCourse(course).stream()
+                .map(enrollment -> StudentDTO.builder()
+                        .id(enrollment.getStudent().getId())
+                        .username(enrollment.getStudent().getUsername())
+                        .email(enrollment.getStudent().getEmail())
+                        .build())
+                .toList();
+    }
 }

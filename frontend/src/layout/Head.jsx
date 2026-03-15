@@ -1,34 +1,24 @@
-import { NavLink } from "react-router-dom"
-
-import "../pages/csspages/headstyle.css"
+import { NavLink } from "react-router-dom";
 import { useSelector } from "react-redux";
 
-export const Head=()=>{
- 
-    
-    const user = useSelector((state) => state.auth.user); // ✅ Get role1
-   
-   
+export const Head = () => {
+  const user = useSelector((state) => state.auth.user);
+  const role = user?.role;
 
-const role = user?.role; // Safe access
-console.log(`this is head role ${role}`);
-
-    return(
-        <>
-       <nav className="nav">
-        <div className="para">
-           
-            <p>from spiders....</p>
-        </div>
-        <div className="topbar">
-            <div className="bar"><NavLink to="home">home </NavLink></div>
-            <div className="bar"><NavLink to={role==="STUDENT"?"/mylearning":"/myclass"}>{role==="STUDENT"?"my Learning":"my Courcess"}</NavLink></div>
-            <div className="bar"><NavLink to="profile">profile</NavLink></div>
-           
-
-        </div>
-        </nav>
-        
-        </>
-    )
-}
+  return (
+    <header className="site-nav" style={{ position: 'relative', top: 0 }}>
+      <div className="brand">LearnSpear</div>
+      <div className="nav-links">
+        <NavLink className="nav-link" to="home">
+          Home
+        </NavLink>
+        <NavLink className="nav-link" to={role === "STUDENT" ? "/mylearning" : "/myclass"}>
+          {role === "STUDENT" ? "My Learning" : "My Courses"}
+        </NavLink>
+        <NavLink className="nav-link" to="profile">
+          Profile
+        </NavLink>
+      </div>
+    </header>
+  );
+};

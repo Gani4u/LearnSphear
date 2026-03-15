@@ -1,12 +1,6 @@
-import { QueryClient, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { fetchEnrolledCourse } from "../API/fetchEnrolledCourse";
-import '../../Trainercomponents/styles/courseliststyle.css'
-import {  useNavigate } from "react-router-dom";
-import { toast } from 'react-toastify';
-
-import 'bootstrap/dist/css/bootstrap.min.css';
-import 'bootstrap-icons/font/bootstrap-icons.css';
-//import { DeleteCourse } from "../Api/DeleteCourse";
+import { useNavigate } from "react-router-dom";
 import React from "react";
 
 //import '../../Trainercomponents/styles/courseliststyle.css';
@@ -21,7 +15,6 @@ const Courselist=()=>{
       //  staleTime:1000*60*5,
       });
       const navigate=useNavigate();
-      const queryClient = useQueryClient();
 
     //   const deleteMutation = useMutation({
     //     mutationFn: DeleteCourse,
@@ -50,7 +43,7 @@ const Courselist=()=>{
 
     //     }
         const handleview=(courseid)=>{
-           navigate(`/viewlesson/${courseid}`);
+           navigate(`/course/${courseid}`);
            console.log(courseid);
         }
 

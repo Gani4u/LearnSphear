@@ -1,12 +1,8 @@
-import { QueryClient, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Fetchcourselist } from "../Api/Fetchcourselist";
-import '../../Trainercomponents/styles/courseliststyle.css'
-import {  useNavigate } from "react-router-dom";
-import { toast } from 'react-toastify';
-
-import 'bootstrap/dist/css/bootstrap.min.css';
-import 'bootstrap-icons/font/bootstrap-icons.css';
 import { DeleteCourse } from "../Api/DeleteCourse";
+import { useNavigate } from "react-router-dom";
+import { toast } from 'react-toastify';
 import React from "react";
 
 //import '../../Trainercomponents/styles/courseliststyle.css';

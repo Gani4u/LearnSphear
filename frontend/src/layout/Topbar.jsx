@@ -1,16 +1,15 @@
-import { Outlet } from "react-router-dom"
-import { Head } from "./Head"
-import { Footer } from "./Footer"
-import "../pages/csspages/topbarstyle.css"
+import { Outlet } from "react-router-dom";
+import { Head } from "./Head";
+import { Footer } from "./Footer";
 
-export const Topbar=()=>{
-    return(
-        <><div className="container">
-        <Head/>
-        <div className="outletdiv"><Outlet/></div>
-        <Footer/>
-        </div>
-        </>
-    )
-
-}
+export const Topbar = () => {
+  return (
+    <div className="container">
+      <Head />
+      <main className="section">
+        <Outlet />
+      </main>
+      <Footer />
+    </div>
+  );
+};
