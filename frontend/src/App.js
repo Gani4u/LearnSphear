@@ -2,15 +2,16 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import LandingPage from "./LandingPage";
 import { Topbar } from "./layout/Topbar";
 import { Home } from "./components/Home";
-import { Mycourse } from "./components/Mycourse";
-import { Mylearning } from "./components/Mylearning";
+import { Mycourse } from "./trainer/Mycourse";
+import { Mylearning } from "./student/Mylearning";
 import { Profile } from "./components/Profile";
-import { Rolebaseroute } from "./authpage/Rolebaseroute";
-import { AddLesson } from "./Trainercomponents/components/AddLesson";
-import { ViewLesson } from "./Trainercomponents/components/ViewLesson";
+import { Rolebaseroute } from "./auth/Rolebaseroute";
+import { AddLesson } from "./trainer/components/AddLesson";
+import { ViewLesson } from "./trainer/components/ViewLesson";
 import { CourseDetail } from "./components/CourseDetail";
 import "react-toastify/dist/ReactToastify.css";
 import { ToastContainer } from "react-toastify";
+
 
 function App() {
   return (

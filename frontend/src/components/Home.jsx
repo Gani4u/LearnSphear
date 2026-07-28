@@ -1,6 +1,6 @@
 import { useSelector } from "react-redux"
-import TrainerHome from "../Trainercomponents/components/TrainerHome";
-import StudentHome from "../Studentcomponents/components/StudentHome";
+import TrainerHome from "../trainer/components/TrainerHome";
+import StudentHome from "../student/components/StudentHome";
 
 export const Home=()=>{
     const user=useSelector((state)=>state.auth.user);
