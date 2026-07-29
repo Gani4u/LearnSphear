@@ -39,6 +39,29 @@ public class Users {
     @Column(nullable = false, updatable = false)
     private LocalDateTime created_at = LocalDateTime.now();
 
+    @Column(length = 255)
+    private String profile_image;
+
+    @Column(columnDefinition = "TEXT")
+    private String bio;
+
+    @Column(length = 255)
+    private String linkedin_url;
+
+    @Column(length = 255)
+    private String github_url;
+
+    @Column(length = 255)
+    private String resume_url;
+
+    @Column(columnDefinition = "integer default 0")
+    private Integer xp = 0;
+
+    @Column(columnDefinition = "integer default 0")
+    private Integer streak = 0;
+
+    private java.time.LocalDate last_learning_date;
+
     @OneToMany(mappedBy = "trainer", cascade = CascadeType.ALL)
     @JsonManagedReference
     private List<Courses> courses;

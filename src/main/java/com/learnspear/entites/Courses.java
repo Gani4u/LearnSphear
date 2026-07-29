@@ -30,6 +30,30 @@ public class Courses {
     @Column(name = "image_url")
     private String imageUrl;
 
+    @Column(length = 50)
+    @Builder.Default
+    private String level = "Beginner";
+
+    @Column(length = 100)
+    @Builder.Default
+    private String category = "General";
+
+    @Builder.Default
+    private Integer duration = 0;
+
+    @Column(length = 50)
+    @Builder.Default
+    private String language = "English";
+
+    @Builder.Default
+    private Double price = 0.0;
+
+    @Column(length = 50)
+    @Builder.Default
+    private String status = "PUBLISHED";
+
+    private Long roadmapId;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "trainer_id", referencedColumnName = "id", nullable = false)
     @JsonBackReference

@@ -23,6 +23,23 @@ public class Lessons {
 
     private String content;
 
+    @Column(name = "video_url")
+    private String videoUrl;
+
+    @Builder.Default
+    private Integer duration = 0;
+
+    @Column(columnDefinition = "TEXT")
+    private String description;
+
+    @Column(name = "is_preview")
+    @Builder.Default
+    private Boolean isPreview = false;
+
+    @Column(name = "lesson_type", length = 50)
+    @Builder.Default
+    private String lessonType = "VIDEO";
+
     @Column(nullable = false)
     private Integer sequence;
 

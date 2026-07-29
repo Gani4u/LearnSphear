@@ -12,5 +12,6 @@ import java.util.Optional;
 public interface LessonRepo extends JpaRepository<Lessons, Long> {
     List<Lessons> findByCourseIdOrderBySequenceAsc(Long courseId);
     Optional<Lessons> findByIdAndCourse(Long id, Courses course);
+    long countByCourse(Courses course);
 
 }

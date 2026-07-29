@@ -9,6 +9,7 @@ import { Rolebaseroute } from "./auth/Rolebaseroute";
 import { AddLesson } from "./trainer/components/AddLesson";
 import { ViewLesson } from "./trainer/components/ViewLesson";
 import { CourseDetail } from "./components/CourseDetail";
+import { CoursePlayer } from "./student/components/CoursePlayer";
 import "react-toastify/dist/ReactToastify.css";
 import { ToastContainer } from "react-toastify";
 
@@ -20,6 +21,24 @@ function App() {
         <Route path="/" element={<LandingPage />} />
         <Route path="/login" element={<LandingPage />} />
         <Route path="/register" element={<LandingPage />} />
+
+        <Route
+          path="course/:courseId/play"
+          element={
+            <Rolebaseroute roleallowed={["STUDENT"]}>
+              <CoursePlayer />
+            </Rolebaseroute>
+          }
+        />
+
+        <Route
+          path="mylearning"
+          element={
+            <Rolebaseroute roleallowed={["STUDENT"]}>
+              <Mylearning />
+            </Rolebaseroute>
+          }
+        />
 
         <Route element={<Topbar />}>
           <Route
@@ -51,14 +70,6 @@ function App() {
             element={
               <Rolebaseroute roleallowed="TRAINER">
                 <ViewLesson />
-              </Rolebaseroute>
-            }
-          />
-          <Route
-            path="mylearning"
-            element={
-              <Rolebaseroute roleallowed="STUDENT">
-                <Mylearning />
               </Rolebaseroute>
             }
           />

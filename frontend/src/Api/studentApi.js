@@ -1,0 +1,108 @@
+import api from "./globalapi";
+
+// 1. Dashboard
+export const fetchDashboard = async () => {
+  const res = await api.get("/student/dashboard");
+  return res.data;
+};
+
+// 2. Profile
+export const fetchProfile = async () => {
+  const res = await api.get("/student/profile");
+  return res.data;
+};
+
+export const updateProfile = async (profileData) => {
+  const res = await api.put("/student/profile", profileData);
+  return res.data;
+};
+
+// 3. Lesson Progress
+export const completeLesson = async ({ courseId, lessonId }) => {
+  const res = await api.post(`/student/courses/${courseId}/lessons/${lessonId}/complete`);
+  return res.data;
+};
+
+// 4. Notes
+export const fetchNotes = async (lessonId) => {
+  const res = await api.get(`/student/lessons/${lessonId}/notes`);
+  return res.data;
+};
+
+export const addNote = async ({ lessonId, note, timestamp }) => {
+  const res = await api.post(`/student/lessons/${lessonId}/notes`, null, {
+    params: { note, timestamp }
+  });
+  return res.data;
+};
+
+// 5. Discussion
+export const fetchDiscussions = async (lessonId) => {
+  const res = await api.get(`/student/lessons/${lessonId}/discussions`);
+  return res.data;
+};
+
+export const addDiscussion = async ({ lessonId, message }) => {
+  const res = await api.post(`/student/lessons/${lessonId}/discussions`, null, {
+    params: { message }
+  });
+  return res.data;
+};
+
+// 6. Roadmap
+export const fetchRoadmaps = async () => {
+  const res = await api.get("/student/roadmaps");
+  return res.data;
+};
+
+export const fetchRoadmapNodes = async (roadmapId) => {
+  const res = await api.get(`/student/roadmaps/${roadmapId}/nodes`);
+  return res.data;
+};
+
+export const fetchRoadmapProgress = async () => {
+  const res = await api.get("/student/roadmaps/progress");
+  return res.data;
+};
+
+// 7. Projects
+export const fetchProjects = async () => {
+  const res = await api.get("/student/projects");
+  return res.data;
+};
+
+export const submitProject = async ({ projectId, githubUrl, liveDemo, notes }) => {
+  const res = await api.post(`/student/projects/${projectId}/submit`, {
+    githubUrl,
+    liveDemo,
+    notes
+  });
+  return res.data;
+};
+
+export const fetchSubmissions = async () => {
+  const res = await api.get("/student/projects/submissions");
+  return res.data;
+};
+
+// 8. Mentors
+export const fetchMentors = async () => {
+  const res = await api.get("/student/mentors");
+  return res.data;
+};
+
+export const requestMentorSession = async (sessionRequest) => {
+  const res = await api.post("/student/mentor/session/request", sessionRequest);
+  return res.data;
+};
+
+// 9. Notifications
+export const fetchNotifications = async () => {
+  const res = await api.get("/student/notifications");
+  return res.data;
+};
+
+export const markNotificationsRead = async () => {
+  const res = await api.put("/student/notifications/read");
+  return res.data;
+};
