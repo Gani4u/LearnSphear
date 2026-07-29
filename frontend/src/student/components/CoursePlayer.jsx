@@ -20,7 +20,8 @@ import {
   fetchNotes,
   addNote,
   fetchDiscussions,
-  addDiscussion
+  addDiscussion,
+  fetchCompletedLessons
 } from "../../Api/studentApi";
 
 export const CoursePlayer = () => {
@@ -38,6 +39,12 @@ export const CoursePlayer = () => {
   const { data: course, isLoading, isError, error } = useQuery({
     queryKey: ["courseDetail", courseId],
     queryFn: () => fetchCourseDetails(courseId),
+    enabled: !!courseId,
+  });
+
+  const { data: completedLessons, refetch: refetchCompleted } = useQuery({
+    queryKey: ["completedLessons", courseId],
+    queryFn: () => fetchCompletedLessons(courseId),
     enabled: !!courseId,
   });
 
@@ -67,8 +74,10 @@ export const CoursePlayer = () => {
     mutationFn: completeLesson,
     onSuccess: (msg) => {
       toast.success(msg || "Lesson completed!");
+      refetchCompleted();
       queryClient.invalidateQueries(["courseDetail", courseId]);
       queryClient.invalidateQueries(["studentDashboard"]);
+      queryClient.invalidateQueries(["enrolledCourses"]);
     },
     onError: (err) => {
       toast.error(err.message || "Failed to update progress");
@@ -337,6 +346,7 @@ export const CoursePlayer = () => {
           <div className="flex flex-col gap-2">
             {sortedLessons.map((lesson) => {
               const isActive = activeLesson?.id === lesson.id;
+              const isCompleted = completedLessons?.includes(lesson.id);
               return (
                 <div
                   key={lesson.id}
@@ -348,11 +358,13 @@ export const CoursePlayer = () => {
                   }`}
                 >
                   <div className="flex items-center gap-3">
-                    <div className="shrink-0 text-slate-400">
-                      {isActive ? (
+                    <div className="shrink-0">
+                      {isCompleted ? (
+                        <CheckCircle2 size={14} className="text-emerald-500 fill-emerald-50" />
+                      ) : isActive ? (
                         <Play size={14} className="text-blue-600 fill-blue-600" />
                       ) : (
-                        <Circle size={14} />
+                        <Circle size={14} className="text-slate-400" />
                       )}
                     </div>
                     <div className="space-y-0.5">

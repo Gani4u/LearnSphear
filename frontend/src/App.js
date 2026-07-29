@@ -4,6 +4,7 @@ import { Topbar } from "./layout/Topbar";
 import { Home } from "./components/Home";
 import { Mycourse } from "./trainer/Mycourse";
 import { Mylearning } from "./student/Mylearning";
+import { AdminWorkspace } from "./admin/AdminWorkspace";
 import { Profile } from "./components/Profile";
 import { Rolebaseroute } from "./auth/Rolebaseroute";
 import { AddLesson } from "./trainer/components/AddLesson";
@@ -45,6 +46,15 @@ function App() {
           element={
             <Rolebaseroute roleallowed={["TRAINER"]}>
               <Mycourse />
+            </Rolebaseroute>
+          }
+        />
+
+        <Route
+          path="admin"
+          element={
+            <Rolebaseroute roleallowed={["ADMIN"]}>
+              <AdminWorkspace />
             </Rolebaseroute>
           }
         />

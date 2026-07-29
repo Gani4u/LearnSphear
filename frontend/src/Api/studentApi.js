@@ -23,6 +23,11 @@ export const completeLesson = async ({ courseId, lessonId }) => {
   return res.data;
 };
 
+export const fetchCompletedLessons = async (courseId) => {
+  const res = await api.get(`/student/courses/${courseId}/lessons/completed`);
+  return res.data;
+};
+
 // 4. Notes
 export const fetchNotes = async (lessonId) => {
   const res = await api.get(`/student/lessons/${lessonId}/notes`);
@@ -125,5 +130,21 @@ export const submitQuizAnswers = async ({ quizId, answers }) => {
 
 export const fetchQuizProgress = async () => {
   const res = await api.get("/student/quizzes/progress");
+  return res.data;
+};
+
+// 11. Payments & Checkouts
+export const validateCouponCode = async (code) => {
+  const res = await api.get(`/student/coupons/validate?code=${code}`);
+  return res.data;
+};
+
+export const checkoutCourse = async ({ courseId, couponCode }) => {
+  const res = await api.post("/student/checkout", { courseId, couponCode });
+  return res.data;
+};
+
+export const fetchBillingHistory = async () => {
+  const res = await api.get("/student/payments/history");
   return res.data;
 };

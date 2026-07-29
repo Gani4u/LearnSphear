@@ -46,6 +46,12 @@ public class StudentController {
         return ResponseEntity.ok(studentService.completeLesson(courseId, lessonId, principal));
     }
 
+    @GetMapping("/courses/{courseId}/lessons/completed")
+    @PreAuthorize("hasRole('STUDENT')")
+    public ResponseEntity<List<Long>> getCompletedLessonIds(@PathVariable Long courseId, Principal principal) {
+        return ResponseEntity.ok(studentService.getCompletedLessonIds(courseId, principal));
+    }
+
     // 4. Notes APIs
     @GetMapping("/lessons/{lessonId}/notes")
     @PreAuthorize("hasRole('STUDENT')")

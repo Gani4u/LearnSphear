@@ -10,10 +10,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.security.Principal;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -38,11 +38,124 @@ public class StudentService {
     private final NotificationRepo notificationRepo;
     private final DiscussionRepo discussionRepo;
     private final MentorSessionRepo mentorSessionRepo;
+    private final AssignmentRepo assignmentRepo;
+    private final AssignmentSubmissionRepo assignmentSubmissionRepo;
+    private final CertificateRepo certificateRepo;
+    private final CourseReviewRepo courseReviewRepo;
+    private final WishlistRepo wishlistRepo;
+    private final CourseSectionRepo courseSectionRepo;
+    private final AnnouncementRepo announcementRepo;
+    private final PaymentRepo paymentRepo;
 
-    // Seed database with default roadmaps, badges, and projects on start
+    // ============================================================
+    // SEED DEFAULT DATA
+    // ============================================================
     @PostConstruct
     @Transactional
     public void seedDefaultData() {
+        // Seed default trainer
+        Users trainer = userRepo.findByUsername("instructor").orElse(null);
+        if (trainer == null) {
+            org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder encoder =
+                new org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder(10);
+            trainer = new Users();
+            trainer.setUsername("instructor");
+            trainer.setEmail("instructor@learnspear.com");
+            trainer.setPassword(encoder.encode("password"));
+            trainer.setRole(com.learnspear.Enums.Role.TRAINER);
+            trainer.setApproved(true);
+            trainer.setBio("Senior Software Engineer with 10+ years of building enterprise scale Java and React systems.");
+            userRepo.save(trainer);
+        }
+
+        // Seed default student
+        Users studentUser = userRepo.findByUsername("student").orElse(null);
+        if (studentUser == null) {
+            org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder encoder =
+                new org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder(10);
+            studentUser = new Users();
+            studentUser.setUsername("student");
+            studentUser.setEmail("student@learnspear.com");
+            studentUser.setPassword(encoder.encode("password"));
+            studentUser.setRole(com.learnspear.Enums.Role.STUDENT);
+            studentUser.setApproved(true);
+            studentUser.setBio("Enthusiastic developer learning Full Stack Engineering.");
+            userRepo.save(studentUser);
+        }
+
+        // Seed default admin
+        Users adminUser = userRepo.findByUsername("admin").orElse(null);
+        if (adminUser == null) {
+            org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder encoder =
+                new org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder(10);
+            adminUser = new Users();
+            adminUser.setUsername("admin");
+            adminUser.setEmail("admin@learnspear.com");
+            adminUser.setPassword(encoder.encode("password"));
+            adminUser.setRole(com.learnspear.Enums.Role.ADMIN);
+            adminUser.setApproved(true);
+            adminUser.setBio("Platform Super Administrator.");
+            userRepo.save(adminUser);
+        }
+
+        // Seed default courses
+        if (courseRepo.count() == 0) {
+            final Users finalTrainer = trainer;
+
+            Courses javaCourse = Courses.builder()
+                    .title("Java Backend Masterclass")
+                    .subtitle("Build enterprise REST APIs with Spring Boot & Hibernate")
+                    .description("Comprehensive guide to core Java, OOP, collections, Spring Boot, Hibernate, REST APIs, and microservices.")
+                    .level("Intermediate")
+                    .category("Backend Engineering")
+                    .duration(36)
+                    .language("English")
+                    .price(99.00)
+                    .status("PUBLISHED")
+                    .tags("java,spring,backend,api")
+                    .requirements("Basic programming knowledge required")
+                    .outcomes("Build production-ready REST APIs, Deploy Spring Boot applications")
+                    .trainer(finalTrainer)
+                    .build();
+            courseRepo.save(javaCourse);
+
+            CourseSection s1 = CourseSection.builder().course(javaCourse).title("Module 1: Java Fundamentals").sequence(1).build();
+            CourseSection s2 = CourseSection.builder().course(javaCourse).title("Module 2: Spring Boot").sequence(2).build();
+            courseSectionRepo.save(s1);
+            courseSectionRepo.save(s2);
+
+            lessonRepo.save(Lessons.builder().course(javaCourse).section(s1).title("Java Basics & Syntax").content("Learn variables, data types and loops.").sequence(1).build());
+            lessonRepo.save(Lessons.builder().course(javaCourse).section(s1).title("OOP Pillars in Java").content("Master Encapsulation, Inheritance, Polymorphism.").sequence(2).build());
+            lessonRepo.save(Lessons.builder().course(javaCourse).section(s2).title("Spring Boot REST Framework").content("Build REST Controllers, handle requests.").sequence(3).build());
+
+            assignmentRepo.save(Assignment.builder().course(javaCourse).title("Build a REST Controller").description("Create a full CRUD REST controller for a Product entity using Spring Boot.").deadlineDays(7).maxMarks(100).build());
+
+            Courses reactCourse = Courses.builder()
+                    .title("Vite & React Mastery")
+                    .subtitle("Modern frontend engineering with React, Redux & Tailwind")
+                    .description("Learn React hooks, virtual DOM, JSX routing, Redux Toolkit state, Tailwind CSS, and optimized production builds.")
+                    .level("Beginner")
+                    .category("Frontend Engineering")
+                    .duration(24)
+                    .language("English")
+                    .price(79.00)
+                    .status("PUBLISHED")
+                    .tags("react,frontend,javascript,vite")
+                    .requirements("HTML & CSS basics required")
+                    .outcomes("Build full React SPA applications, Manage state with Redux")
+                    .trainer(finalTrainer)
+                    .build();
+            courseRepo.save(reactCourse);
+
+            CourseSection r1 = CourseSection.builder().course(reactCourse).title("Module 1: React Basics").sequence(1).build();
+            courseSectionRepo.save(r1);
+
+            lessonRepo.save(Lessons.builder().course(reactCourse).section(r1).title("Introduction to JSX").content("Understand component rendering and props binding.").sequence(1).build());
+            lessonRepo.save(Lessons.builder().course(reactCourse).section(r1).title("React Hooks System").content("Master useState, useEffect, and custom hooks.").sequence(2).build());
+
+            assignmentRepo.save(Assignment.builder().course(reactCourse).title("Build a Todo App").description("Create a complete Todo app with React hooks, local state management, and Tailwind CSS styling.").deadlineDays(5).maxMarks(100).build());
+        }
+
         if (badgeMasterRepo.count() == 0) {
             badgeMasterRepo.save(BadgeMaster.builder().name("First Step").description("Completed your first lesson!").icon("Flame").xpRequired(10).build());
             badgeMasterRepo.save(BadgeMaster.builder().name("Streak Master").description("Maintained a 5-day streak!").icon("Calendar").xpRequired(50).build());
@@ -57,38 +170,49 @@ public class StudentService {
                     .level("Intermediate")
                     .build();
             roadmapRepo.save(backendPath);
-
             roadmapNodeRepo.save(RoadmapNode.builder().roadmap(backendPath).title("Java Fundamentals").orderNo(1).estimatedHours(12).xpReward(50).build());
-            roadmapNodeRepo.save(RoadmapNode.builder().roadmap(backendPath).title("OOP & Collections").orderNo(2).estimatedHours(10).xpReward(50).build());
-            roadmapNodeRepo.save(RoadmapNode.builder().roadmap(backendPath).title("Spring Boot").orderNo(3).estimatedHours(20).xpReward(100).build());
-            roadmapNodeRepo.save(RoadmapNode.builder().roadmap(backendPath).title("REST APIs & Security").orderNo(4).estimatedHours(15).xpReward(100).build());
-            roadmapNodeRepo.save(RoadmapNode.builder().roadmap(backendPath).title("Docker & AWS").orderNo(5).estimatedHours(18).xpReward(150).build());
-            roadmapNodeRepo.save(RoadmapNode.builder().roadmap(backendPath).title("Certified Developer").orderNo(6).estimatedHours(0).xpReward(250).build());
+            roadmapNodeRepo.save(RoadmapNode.builder().roadmap(backendPath).title("Spring Boot").orderNo(2).estimatedHours(20).xpReward(100).build());
         }
 
-        // Add dummy projects if none exist
         if (projectRepo.count() == 0) {
             List<Courses> courses = courseRepo.findAll();
             for (Courses course : courses) {
                 projectRepo.save(Project.builder()
                         .course(course)
                         .title("Build a CRUD REST API for " + course.getTitle())
-                        .description("Create a fully operational CRUD REST API. Must include relational tables, input validation, clean layered architecture, and unit testing wrappers.")
+                        .description("Create a fully operational CRUD REST API. Must include relational tables, input validation, clean layered architecture.")
                         .difficulty("Medium")
                         .deadlineDays(7)
                         .maxScore(100)
+                        .githubRequired(true)
+                        .rubric("- Clean code: 30pts\n- Working API: 40pts\n- Tests: 20pts\n- Documentation: 10pts")
+                        .build());
+            }
+        }
+
+        // Seed announcement
+        if (announcementRepo.count() == 0) {
+            Users admin = userRepo.findByUsername("admin").orElse(null);
+            if (admin != null) {
+                announcementRepo.save(Announcement.builder()
+                        .title("Welcome to LearnSphear! 🎉")
+                        .message("We're excited to have you here. Start exploring courses and begin your learning journey today!")
+                        .type("GLOBAL")
+                        .createdBy(admin)
                         .build());
             }
         }
     }
 
-    // 1. Dashboard
+    // ============================================================
+    // 1. DASHBOARD
+    // ============================================================
     public DashboardResponseDTO getDashboardData(Principal principal) {
         Users student = getStudent(principal);
 
-        // Sum XP
         Integer totalXp = studentXpRepo.sumXpByStudentId(student.getId());
-        if (student.getXp() != totalXp) {
+        if (totalXp == null) totalXp = 0;
+        if (!totalXp.equals(student.getXp())) {
             student.setXp(totalXp);
             userRepo.save(student);
         }
@@ -98,11 +222,10 @@ public class StudentService {
         List<Notification> unreadNotifications = notificationRepo.findByUserIdAndIsReadOrderByCreatedAtDesc(student.getId(), false);
         List<MentorSession> sessions = mentorSessionRepo.findByStudentIdOrderByStartTimeAsc(student.getId());
 
-        // Find last active enrollment
         List<Enrollment> enrollments = enrollmentRepo.findByStudent(student);
         EnrollmentResponseDTO lastActive = null;
         if (!enrollments.isEmpty()) {
-            Enrollment active = enrollments.get(enrollments.size() - 1); // Get last enrollment
+            Enrollment active = enrollments.get(enrollments.size() - 1);
             lastActive = mapEnrollmentToDTO(active);
         }
 
@@ -113,45 +236,144 @@ public class StudentService {
                 .completedCoursesCount(completedCount)
                 .notifications(unreadNotifications)
                 .upcomingSessions(sessions)
-                .dailyGoal(60) // default 60%
+                .dailyGoal(60)
                 .lastActiveEnrollment(lastActive)
                 .build();
     }
 
-    // 2. Profile Details & Updates
-    public ProfileResponseDTO getProfile(Principal principal) {
+    // ============================================================
+    // 2. ENROLLED COURSES (MY COURSES TAB)
+    // ============================================================
+    public List<StudentEnrollmentDTO> getEnrolledCourses(Principal principal) {
         Users student = getStudent(principal);
-        List<StudentBadge> badgesEarned = studentBadgeRepo.findByStudentId(student.getId());
-        List<BadgeMaster> badges = badgesEarned.stream().map(StudentBadge::getBadge).toList();
-        List<ProjectSubmission> submissions = projectSubmissionRepo.findByStudentId(student.getId());
+        List<Enrollment> enrollments = enrollmentRepo.findByStudent(student);
+        return enrollments.stream().map(e -> {
+            Courses course = e.getCourse();
+            long totalLessons = lessonRepo.countByCourse(course);
+            long completedLessons = lessonProgressRepo.countByStudentIdAndCourseIdAndCompleted(student.getId(), course.getId(), true);
+            return StudentEnrollmentDTO.builder()
+                    .enrollmentId(e.getId())
+                    .courseId(course.getId())
+                    .courseTitle(course.getTitle())
+                    .courseSubtitle(course.getSubtitle())
+                    .thumbnailUrl(course.getThumbnailUrl())
+                    .imageUrl(course.getImageUrl())
+                    .trainerName(course.getTrainer().getUsername())
+                    .progressPercentage(e.getProgressPercentage())
+                    .completed(e.getCompleted())
+                    .certificateGenerated(e.getCertificateGenerated())
+                    .enrollmentDate(e.getEnrollmentDate())
+                    .lastAccessedAt(e.getLastAccessedAt())
+                    .totalLessons((int) totalLessons)
+                    .completedLessons((int) completedLessons)
+                    .level(course.getLevel())
+                    .category(course.getCategory())
+                    .build();
+        }).collect(Collectors.toList());
+    }
 
-        return ProfileResponseDTO.builder()
-                .username(student.getUsername())
-                .email(student.getEmail())
-                .bio(student.getBio())
-                .profileImage(student.getProfile_image())
-                .linkedinUrl(student.getLinkedin_url())
-                .githubUrl(student.getGithub_url())
-                .resumeUrl(student.getResume_url())
-                .xp(student.getXp())
-                .streak(student.getStreak())
-                .badges(badges)
-                .completedProjects(submissions)
+    // ============================================================
+    // 3. EXPLORE COURSES
+    // ============================================================
+    public List<CourseExploreDTO> exploreCourses(String search, String category, String level, Principal principal) {
+        Users student = principal != null ? userRepo.findByUsername(principal.getName()).orElse(null) : null;
+        List<Courses> allCourses = courseRepo.findAll().stream()
+                .filter(c -> "PUBLISHED".equalsIgnoreCase(c.getStatus()))
+                .collect(Collectors.toList());
+
+        if (search != null && !search.isBlank()) {
+            String q = search.toLowerCase();
+            allCourses = allCourses.stream()
+                    .filter(c -> c.getTitle().toLowerCase().contains(q) ||
+                                 (c.getDescription() != null && c.getDescription().toLowerCase().contains(q)) ||
+                                 (c.getCategory() != null && c.getCategory().toLowerCase().contains(q)))
+                    .collect(Collectors.toList());
+        }
+        if (category != null && !category.isBlank() && !"All".equalsIgnoreCase(category)) {
+            allCourses = allCourses.stream()
+                    .filter(c -> category.equalsIgnoreCase(c.getCategory()))
+                    .collect(Collectors.toList());
+        }
+        if (level != null && !level.isBlank() && !"All".equalsIgnoreCase(level)) {
+            allCourses = allCourses.stream()
+                    .filter(c -> level.equalsIgnoreCase(c.getLevel()))
+                    .collect(Collectors.toList());
+        }
+
+        final Users finalStudent = student;
+        return allCourses.stream().map(course -> buildCourseExploreDTO(course, finalStudent)).collect(Collectors.toList());
+    }
+
+    public CourseExploreDTO getCourseDetail(Long courseId, Principal principal) {
+        Courses course = courseRepo.findById(courseId)
+                .orElseThrow(() -> new RuntimeException("Course not found"));
+        Users student = principal != null ? userRepo.findByUsername(principal.getName()).orElse(null) : null;
+        return buildCourseExploreDTO(course, student);
+    }
+
+    private CourseExploreDTO buildCourseExploreDTO(Courses course, Users student) {
+        long totalLessons = lessonRepo.countByCourse(course);
+        Double avgRating = courseReviewRepo.findAverageRatingByCourseId(course.getId());
+        long reviewCount = courseReviewRepo.countByCourseId(course.getId());
+        long enrolledCount = enrollmentRepo.countByCourse(course);
+
+        boolean isEnrolled = false;
+        boolean isWishlisted = false;
+        if (student != null) {
+            isEnrolled = enrollmentRepo.findByStudentAndCourse(student, course).isPresent();
+            isWishlisted = wishlistRepo.existsByStudentIdAndCourseId(student.getId(), course.getId());
+        }
+
+        List<CourseSection> sections = courseSectionRepo.findByCourseOrderBySequenceAsc(course);
+        List<CourseSectionDTO> sectionDTOs = sections.stream().map(sec -> {
+            List<LessonDTO> lessonDTOs = sec.getLessons().stream().map(l -> LessonDTO.builder()
+                    .id(l.getId())
+                    .title(l.getTitle())
+                    .videoUrl(l.getIsPreview() ? l.getVideoUrl() : null)
+                    .isPreview(l.getIsPreview())
+                    .duration(l.getDuration())
+                    .lessonType(l.getLessonType())
+                    .sequence(l.getSequence())
+                    .sectionId(sec.getId())
+                    .build()).collect(Collectors.toList());
+            return CourseSectionDTO.builder()
+                    .id(sec.getId())
+                    .title(sec.getTitle())
+                    .sequence(sec.getSequence())
+                    .lessons(lessonDTOs)
+                    .build();
+        }).collect(Collectors.toList());
+
+        return CourseExploreDTO.builder()
+                .id(course.getId())
+                .title(course.getTitle())
+                .subtitle(course.getSubtitle())
+                .description(course.getDescription())
+                .imageUrl(course.getImageUrl())
+                .thumbnailUrl(course.getThumbnailUrl())
+                .level(course.getLevel())
+                .category(course.getCategory())
+                .language(course.getLanguage())
+                .price(course.getPrice())
+                .discount(course.getDiscount())
+                .tags(course.getTags())
+                .status(course.getStatus())
+                .trainerName(course.getTrainer().getUsername())
+                .trainerId(course.getTrainer().getId())
+                .totalLessons((int) totalLessons)
+                .totalDuration(course.getDuration())
+                .averageRating(avgRating != null ? Math.round(avgRating * 10.0) / 10.0 : 0.0)
+                .reviewCount(reviewCount)
+                .enrolledCount(enrolledCount)
+                .isEnrolled(isEnrolled)
+                .isWishlisted(isWishlisted)
+                .sections(sectionDTOs)
                 .build();
     }
 
-    public ProfileResponseDTO updateProfile(ProfileResponseDTO dto, Principal principal) {
-        Users student = getStudent(principal);
-        student.setBio(dto.getBio());
-        student.setProfile_image(dto.getProfileImage());
-        student.setLinkedin_url(dto.getLinkedinUrl());
-        student.setGithub_url(dto.getGithubUrl());
-        student.setResume_url(dto.getResumeUrl());
-        userRepo.save(student);
-        return getProfile(principal);
-    }
-
-    // 3. Lesson Progress & Completion
+    // ============================================================
+    // 4. LESSON PROGRESS
+    // ============================================================
     @Transactional
     public String completeLesson(Long courseId, Long lessonId, Principal principal) {
         Users student = getStudent(principal);
@@ -165,7 +387,6 @@ public class StudentService {
             return "Lesson already marked completed";
         }
 
-        // Save progress
         LessonProgress progress = LessonProgress.builder()
                 .student(student)
                 .lesson(lesson)
@@ -175,39 +396,205 @@ public class StudentService {
                 .build();
         lessonProgressRepo.save(progress);
 
-        // Update overall course progress percentage
         Enrollment enrollment = enrollmentRepo.findByStudentAndCourse(student, course)
                 .orElseThrow(() -> new RuntimeException("Enrollment not found"));
+
+        enrollment.setLastAccessedAt(LocalDateTime.now());
 
         long totalLessons = lessonRepo.countByCourse(course);
         long completedLessons = lessonProgressRepo.countByStudentIdAndCourseIdAndCompleted(student.getId(), courseId, true);
 
         int percentage = totalLessons > 0 ? (int) ((completedLessons * 100) / totalLessons) : 0;
         enrollment.setProgressPercentage(percentage);
+
         if (percentage >= 100) {
             enrollment.setCompleted(true);
             enrollment.setCompletedAt(LocalDateTime.now());
-            
-            // Create notification for completing course
+            enrollment.setCertificateGenerated(true);
+
+            // Auto-generate certificate
+            boolean certExists = certificateRepo.findByStudentIdAndCourseId(student.getId(), courseId).isPresent();
+            if (!certExists) {
+                certificateRepo.save(Certificate.builder()
+                        .student(student)
+                        .course(course)
+                        .issuedAt(LocalDateTime.now())
+                        .build());
+            }
+
             notificationRepo.save(Notification.builder()
                     .user(student)
                     .title("Course Completed! 🎓")
-                    .message("Congratulations! You have completed the course: " + course.getTitle())
+                    .message("Congratulations! You have completed: " + course.getTitle() + ". Your certificate is ready!")
                     .type("SYSTEM")
                     .build());
         }
         enrollmentRepo.save(enrollment);
 
-        // Award XP
         awardXp(student, 10, "Completed Lesson: " + lesson.getTitle());
-
-        // Check and unlock badges
         checkAndAwardBadges(student);
 
         return "Lesson progress updated successfully";
     }
 
-    // 4. Notes
+    public List<Long> getCompletedLessonIds(Long courseId, Principal principal) {
+        Users student = getStudent(principal);
+        List<LessonProgress> list = lessonProgressRepo.findByStudentIdAndCourseId(student.getId(), courseId);
+        return list.stream().map(lp -> lp.getLesson().getId()).toList();
+    }
+
+    // ============================================================
+    // 5. ASSIGNMENTS
+    // ============================================================
+    public List<AssignmentDTO> getStudentAssignments(Principal principal) {
+        Users student = getStudent(principal);
+        List<Enrollment> enrollments = enrollmentRepo.findByStudent(student);
+        List<Courses> enrolledCourses = enrollments.stream().map(Enrollment::getCourse).collect(Collectors.toList());
+        List<Assignment> assignments = assignmentRepo.findByCourseIn(enrolledCourses);
+
+        return assignments.stream().map(a -> {
+            Optional<AssignmentSubmission> sub = assignmentSubmissionRepo.findByAssignmentIdAndStudentId(a.getId(), student.getId());
+            return AssignmentDTO.builder()
+                    .id(a.getId())
+                    .courseId(a.getCourse().getId())
+                    .courseTitle(a.getCourse().getTitle())
+                    .title(a.getTitle())
+                    .description(a.getDescription())
+                    .deadlineDays(a.getDeadlineDays())
+                    .maxMarks(a.getMaxMarks())
+                    .fileUrl(a.getFileUrl())
+                    .createdAt(a.getCreatedAt())
+                    .submissionStatus(sub.map(AssignmentSubmission::getStatus).orElse("NOT_SUBMITTED"))
+                    .grade(sub.map(AssignmentSubmission::getGrade).orElse(null))
+                    .feedback(sub.map(AssignmentSubmission::getFeedback).orElse(null))
+                    .build();
+        }).collect(Collectors.toList());
+    }
+
+    @Transactional
+    public AssignmentSubmission submitAssignment(Long assignmentId, String submissionText, String fileUrl, Principal principal) {
+        Users student = getStudent(principal);
+        Assignment assignment = assignmentRepo.findById(assignmentId)
+                .orElseThrow(() -> new RuntimeException("Assignment not found"));
+
+        Optional<AssignmentSubmission> existing = assignmentSubmissionRepo.findByAssignmentIdAndStudentId(assignmentId, student.getId());
+        AssignmentSubmission submission;
+        if (existing.isPresent()) {
+            submission = existing.get();
+            submission.setSubmissionText(submissionText);
+            submission.setFileUrl(fileUrl);
+            submission.setStatus("RESUBMITTED");
+            submission.setSubmittedAt(LocalDateTime.now());
+        } else {
+            submission = AssignmentSubmission.builder()
+                    .assignment(assignment)
+                    .student(student)
+                    .submissionText(submissionText)
+                    .fileUrl(fileUrl)
+                    .status("SUBMITTED")
+                    .submittedAt(LocalDateTime.now())
+                    .build();
+        }
+        return assignmentSubmissionRepo.save(submission);
+    }
+
+    public List<AssignmentSubmission> getMyAssignmentSubmissions(Principal principal) {
+        Users student = getStudent(principal);
+        return assignmentSubmissionRepo.findByStudent(student);
+    }
+
+    // ============================================================
+    // 6. CERTIFICATES
+    // ============================================================
+    public List<CertificateDTO> getCertificates(Principal principal) {
+        Users student = getStudent(principal);
+        return certificateRepo.findByStudent(student).stream().map(cert ->
+            CertificateDTO.builder()
+                    .id(cert.getId())
+                    .courseId(cert.getCourse().getId())
+                    .courseTitle(cert.getCourse().getTitle())
+                    .trainerName(cert.getCourse().getTrainer().getUsername())
+                    .issuedAt(cert.getIssuedAt())
+                    .certificateUrl(cert.getCertificateUrl())
+                    .studentName(student.getUsername())
+                    .build()
+        ).collect(Collectors.toList());
+    }
+
+    // ============================================================
+    // 7. REVIEWS
+    // ============================================================
+    @Transactional
+    public CourseReview postReview(Long courseId, Integer rating, String reviewText, Principal principal) {
+        Users student = getStudent(principal);
+        Courses course = courseRepo.findById(courseId)
+                .orElseThrow(() -> new RuntimeException("Course not found"));
+
+        Optional<CourseReview> existing = courseReviewRepo.findByCourseIdAndStudentId(courseId, student.getId());
+        CourseReview review;
+        if (existing.isPresent()) {
+            review = existing.get();
+            review.setRating(rating);
+            review.setReviewText(reviewText);
+            review.setUpdatedAt(LocalDateTime.now());
+        } else {
+            review = CourseReview.builder()
+                    .course(course)
+                    .student(student)
+                    .rating(rating)
+                    .reviewText(reviewText)
+                    .createdAt(LocalDateTime.now())
+                    .build();
+        }
+        return courseReviewRepo.save(review);
+    }
+
+    public List<CourseReviewDTO> getCourseReviews(Long courseId) {
+        return courseReviewRepo.findByCourseId(courseId).stream().map(r ->
+            CourseReviewDTO.builder()
+                    .id(r.getId())
+                    .courseId(courseId)
+                    .studentId(r.getStudent().getId())
+                    .studentUsername(r.getStudent().getUsername())
+                    .rating(r.getRating())
+                    .reviewText(r.getReviewText())
+                    .createdAt(r.getCreatedAt())
+                    .build()
+        ).collect(Collectors.toList());
+    }
+
+    // ============================================================
+    // 8. WISHLIST
+    // ============================================================
+    @Transactional
+    public String addToWishlist(Long courseId, Principal principal) {
+        Users student = getStudent(principal);
+        if (wishlistRepo.existsByStudentIdAndCourseId(student.getId(), courseId)) {
+            return "Already in wishlist";
+        }
+        Courses course = courseRepo.findById(courseId)
+                .orElseThrow(() -> new RuntimeException("Course not found"));
+        wishlistRepo.save(Wishlist.builder().student(student).course(course).build());
+        return "Added to wishlist";
+    }
+
+    @Transactional
+    public String removeFromWishlist(Long courseId, Principal principal) {
+        Users student = getStudent(principal);
+        wishlistRepo.deleteByStudentIdAndCourseId(student.getId(), courseId);
+        return "Removed from wishlist";
+    }
+
+    public List<CourseExploreDTO> getWishlist(Principal principal) {
+        Users student = getStudent(principal);
+        return wishlistRepo.findByStudent(student).stream()
+                .map(w -> buildCourseExploreDTO(w.getCourse(), student))
+                .collect(Collectors.toList());
+    }
+
+    // ============================================================
+    // 9. NOTES
+    // ============================================================
     public List<LessonNotes> getNotes(Long lessonId, Principal principal) {
         Users student = getStudent(principal);
         return lessonNotesRepo.findByStudentIdAndLessonId(student.getId(), lessonId);
@@ -229,7 +616,9 @@ public class StudentService {
         return lessonNotesRepo.save(note);
     }
 
-    // 5. Discussion
+    // ============================================================
+    // 10. DISCUSSIONS
+    // ============================================================
     public List<Discussion> getDiscussions(Long lessonId) {
         return discussionRepo.findByLessonIdOrderByCreatedAtAsc(lessonId);
     }
@@ -238,7 +627,6 @@ public class StudentService {
         Users student = getStudent(principal);
         Lessons lesson = lessonRepo.findById(lessonId)
                 .orElseThrow(() -> new RuntimeException("Lesson not found"));
-
         Discussion discussion = Discussion.builder()
                 .lesson(lesson)
                 .student(student)
@@ -248,7 +636,9 @@ public class StudentService {
         return discussionRepo.save(discussion);
     }
 
-    // 6. Roadmap
+    // ============================================================
+    // 11. ROADMAPS
+    // ============================================================
     public List<Roadmap> getRoadmaps() {
         return roadmapRepo.findAll();
     }
@@ -262,7 +652,9 @@ public class StudentService {
         return studentRoadmapProgressRepo.findByStudentId(student.getId());
     }
 
-    // 7. Projects
+    // ============================================================
+    // 12. PROJECTS
+    // ============================================================
     public List<Project> getProjectsForStudent(Principal principal) {
         Users student = getStudent(principal);
         List<Enrollment> enrollments = enrollmentRepo.findByStudent(student);
@@ -298,18 +690,15 @@ public class StudentService {
                     .status("SUBMITTED")
                     .submittedAt(LocalDateTime.now())
                     .build();
-            // Award XP for first submission
-            awardXp(student, 100, "Submitted Capstone Project: " + project.getTitle());
+            awardXp(student, 100, "Submitted Project: " + project.getTitle());
         }
-
         projectSubmissionRepo.save(submission);
 
-        // Notify Trainer/Mentor
-        Users trainer = project.getCourse().getTrainer();
+        Users trainerUser = project.getCourse().getTrainer();
         notificationRepo.save(Notification.builder()
-                .user(trainer)
+                .user(trainerUser)
                 .title("New Project Submission 💻")
-                .message("Student " + student.getUsername() + " submitted a project for: " + project.getTitle())
+                .message("Student " + student.getUsername() + " submitted: " + project.getTitle())
                 .type("REVIEW")
                 .build());
 
@@ -321,7 +710,9 @@ public class StudentService {
         return projectSubmissionRepo.findByStudentId(student.getId());
     }
 
-    // 8. Mentors & Booking
+    // ============================================================
+    // 13. MENTORS (Kept for backward compat)
+    // ============================================================
     public List<Users> getMentors(Principal principal) {
         Users student = getStudent(principal);
         List<Enrollment> enrollments = enrollmentRepo.findByStudent(student);
@@ -330,39 +721,32 @@ public class StudentService {
 
     public MentorSession requestSession(MentorSessionRequest req, Principal principal) {
         Users student = getStudent(principal);
-        Users trainer = userRepo.findById(req.getTrainerId())
+        Users trainerUser = userRepo.findById(req.getTrainerId())
                 .orElseThrow(() -> new RuntimeException("Trainer not found"));
         Courses course = courseRepo.findById(req.getCourseId())
                 .orElseThrow(() -> new RuntimeException("Course not found"));
-
-        DateTimeFormatter formatter = DateTimeFormatter.ISO_DATE_TIME;
+        java.time.format.DateTimeFormatter formatter = java.time.format.DateTimeFormatter.ISO_DATE_TIME;
         LocalDateTime start = LocalDateTime.parse(req.getStartTime(), formatter);
         LocalDateTime end = LocalDateTime.parse(req.getEndTime(), formatter);
-
         MentorSession session = MentorSession.builder()
-                .student(student)
-                .trainer(trainer)
-                .course(course)
-                .startTime(start)
-                .endTime(end)
+                .student(student).trainer(trainerUser).course(course)
+                .startTime(start).endTime(end)
                 .meetingLink("https://meet.google.com/mock-link-ls")
                 .status("SCHEDULED")
                 .build();
-
         mentorSessionRepo.save(session);
-
-        // Notify Trainer
         notificationRepo.save(Notification.builder()
-                .user(trainer)
+                .user(trainerUser)
                 .title("Session Request 📅")
-                .message("Student " + student.getUsername() + " requested a live session for " + course.getTitle() + " on " + start.toString())
+                .message("Student " + student.getUsername() + " requested a live session for " + course.getTitle())
                 .type("SYSTEM")
                 .build());
-
         return session;
     }
 
-    // 9. Notifications
+    // ============================================================
+    // 14. NOTIFICATIONS
+    // ============================================================
     public List<Notification> getNotifications(Principal principal) {
         Users student = getStudent(principal);
         return notificationRepo.findByUserIdOrderByCreatedAtDesc(student.getId());
@@ -379,10 +763,70 @@ public class StudentService {
         return "Notifications marked read";
     }
 
-    // Helpers
+    // ============================================================
+    // 15. ANNOUNCEMENTS
+    // ============================================================
+    public List<AnnouncementDTO> getAnnouncements() {
+        return announcementRepo.findAllByOrderByCreatedAtDesc().stream().map(a ->
+            AnnouncementDTO.builder()
+                    .id(a.getId())
+                    .title(a.getTitle())
+                    .message(a.getMessage())
+                    .type(a.getType())
+                    .createdBy(a.getCreatedBy() != null ? a.getCreatedBy().getUsername() : "Admin")
+                    .createdAt(a.getCreatedAt())
+                    .build()
+        ).collect(Collectors.toList());
+    }
+
+    // ============================================================
+    // 16. PAYMENTS HISTORY
+    // ============================================================
+    public List<Payment> getBillingHistory(Principal principal) {
+        Users student = getStudent(principal);
+        return paymentRepo.findByStudent(student);
+    }
+
+    // ============================================================
+    // 17. PROFILE
+    // ============================================================
+    public ProfileResponseDTO getProfile(Principal principal) {
+        Users student = getStudent(principal);
+        List<StudentBadge> badgesEarned = studentBadgeRepo.findByStudentId(student.getId());
+        List<BadgeMaster> badges = badgesEarned.stream().map(StudentBadge::getBadge).toList();
+        List<ProjectSubmission> submissions = projectSubmissionRepo.findByStudentId(student.getId());
+        return ProfileResponseDTO.builder()
+                .username(student.getUsername())
+                .email(student.getEmail())
+                .bio(student.getBio())
+                .profileImage(student.getProfile_image())
+                .linkedinUrl(student.getLinkedin_url())
+                .githubUrl(student.getGithub_url())
+                .resumeUrl(student.getResume_url())
+                .xp(student.getXp())
+                .streak(student.getStreak())
+                .badges(badges)
+                .completedProjects(submissions)
+                .build();
+    }
+
+    public ProfileResponseDTO updateProfile(ProfileResponseDTO dto, Principal principal) {
+        Users student = getStudent(principal);
+        student.setBio(dto.getBio());
+        student.setProfile_image(dto.getProfileImage());
+        student.setLinkedin_url(dto.getLinkedinUrl());
+        student.setGithub_url(dto.getGithubUrl());
+        student.setResume_url(dto.getResumeUrl());
+        userRepo.save(student);
+        return getProfile(principal);
+    }
+
+    // ============================================================
+    // HELPERS
+    // ============================================================
     private Users getStudent(Principal principal) {
         return userRepo.findByUsername(principal.getName())
-                .orElseThrow(() -> new RuntimeException("Student not found"));
+                .orElseThrow(() -> new RuntimeException("User not found"));
     }
 
     private void awardXp(Users student, int amount, String activity) {
@@ -392,9 +836,8 @@ public class StudentService {
                 .xp(amount)
                 .earnedAt(LocalDateTime.now())
                 .build());
-
         Integer totalXp = studentXpRepo.sumXpByStudentId(student.getId());
-        student.setXp(totalXp);
+        student.setXp(totalXp != null ? totalXp : 0);
         userRepo.save(student);
     }
 
@@ -408,12 +851,10 @@ public class StudentService {
                         .badge(badge)
                         .earnedAt(LocalDateTime.now())
                         .build());
-
-                // Create alert notification
                 notificationRepo.save(Notification.builder()
                         .user(student)
                         .title("Badge Unlocked! 🏆")
-                        .message("Congratulations! You unlocked the badge: " + badge.getName())
+                        .message("You unlocked the badge: " + badge.getName())
                         .type("STREAK")
                         .build());
             }
@@ -422,13 +863,11 @@ public class StudentService {
 
     private EnrollmentResponseDTO mapEnrollmentToDTO(Enrollment enrollment) {
         Courses course = enrollment.getCourse();
-
         List<LessonDto> lessonDTOs = course.getLessons().stream().map(lesson -> LessonDto.builder()
                 .title(lesson.getTitle())
                 .content(lesson.getContent())
                 .sequence(lesson.getSequence())
                 .build()).toList();
-
         CourseResponseDTO courseDTO = CourseResponseDTO.builder()
                 .id(course.getId())
                 .title(course.getTitle())
@@ -436,7 +875,6 @@ public class StudentService {
                 .imageUrl(course.getImageUrl())
                 .lessons(lessonDTOs)
                 .build();
-
         return EnrollmentResponseDTO.builder()
                 .id(enrollment.getId())
                 .enrollmentDate(enrollment.getEnrollmentDate())

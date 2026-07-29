@@ -26,6 +26,9 @@ public class Lessons {
     @Column(name = "video_url")
     private String videoUrl;
 
+    @Column(name = "resources_url")
+    private String resourcesUrl;
+
     @Builder.Default
     private Integer duration = 0;
 
@@ -47,4 +50,9 @@ public class Lessons {
     @JoinColumn(name = "course_id", referencedColumnName = "id", nullable = false)
     @JsonBackReference
     private Courses course;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "section_id")
+    @JsonBackReference
+    private CourseSection section;
 }

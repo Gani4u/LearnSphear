@@ -42,8 +42,10 @@ import {
   fetchCourseQuizzes,
   fetchQuizQuestions,
   submitQuizAnswers,
-  fetchQuizProgress
+  fetchQuizProgress,
+  fetchBillingHistory
 } from "../Api/studentApi";
+import { fetchEnrolledCourse } from "../Api/fetchEnrolledCourse";
 
 export const Mylearning = () => {
   const user = useSelector((state) => state.auth.user);
@@ -123,6 +125,18 @@ export const Mylearning = () => {
     queryKey: ["quizProgress"],
     queryFn: fetchQuizProgress,
     enabled: activeTab === "assessment",
+  });
+
+  const { data: billingHistory } = useQuery({
+    queryKey: ["billingHistory"],
+    queryFn: fetchBillingHistory,
+    enabled: activeTab === "settings",
+  });
+
+  const { data: enrolledCourses } = useQuery({
+    queryKey: ["enrolledCourses"],
+    queryFn: fetchEnrolledCourse,
+    enabled: activeTab === "learning",
   });
 
   const submitQuizMutation = useMutation({
@@ -511,44 +525,60 @@ export const Mylearning = () => {
                   <p className="text-sm text-slate-500">Pick any course to play, review resources, or write custom study notes.</p>
                 </div>
 
-                {dashboardData?.lastActiveEnrollment ? (
+                {enrolledCourses && enrolledCourses.length > 0 ? (
                   <div className="grid sm:grid-cols-2 gap-6">
-                    {/* Render a single premium list card */}
-                    <div className="bg-white border border-slate-200/80 rounded-3xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col justify-between group">
-                      <div>
-                        <div className="h-44 bg-slate-100 overflow-hidden relative">
-                          <img
-                            src={dashboardData.lastActiveEnrollment.course.imageUrl ? `http://localhost:8080/images/${dashboardData.lastActiveEnrollment.course.imageUrl}` : "https://picsum.photos/seed/learn/400/220"}
-                            alt={dashboardData.lastActiveEnrollment.course.title}
-                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                          />
+                    {enrolledCourses.map((enrollment) => (
+                      <div key={enrollment.id} className="bg-white border border-slate-200/80 rounded-3xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col justify-between group">
+                        <div>
+                          <div className="h-44 bg-slate-100 overflow-hidden relative">
+                            <img
+                              src={enrollment.course.imageUrl ? `http://localhost:8080/images/${enrollment.course.imageUrl}` : "https://picsum.photos/seed/learn/400/220"}
+                              alt={enrollment.course.title}
+                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                            />
+                          </div>
+                          <div className="p-6 space-y-3">
+                            <div className="flex justify-between items-center">
+                              <span className="px-2.5 py-1 bg-blue-50 text-blue-600 rounded-lg text-[10px] font-bold uppercase tracking-wider">
+                                {enrollment.course.category || "Development"}
+                              </span>
+                              <span className="text-xs font-bold text-blue-600">
+                                {enrollment.progressPercentage || 0}% Done
+                              </span>
+                            </div>
+                            <h3 className="font-extrabold text-slate-800 text-base group-hover:text-blue-600 transition-colors">
+                              {enrollment.course.title}
+                            </h3>
+                            <p className="text-xs text-slate-400 line-clamp-2 leading-relaxed">
+                              {enrollment.course.description}
+                            </p>
+                          </div>
                         </div>
-                        <div className="p-6 space-y-3">
-                          <span className="px-2.5 py-1 bg-blue-50 text-blue-600 rounded-lg text-[10px] font-bold uppercase tracking-wider">Active Path</span>
-                          <h3 className="font-extrabold text-slate-800 text-lg group-hover:text-blue-600 transition-colors">
-                            {dashboardData.lastActiveEnrollment.course.title}
-                          </h3>
-                          <p className="text-xs text-slate-400 line-clamp-2 leading-relaxed">
-                            {dashboardData.lastActiveEnrollment.course.description}
-                          </p>
+                        <div className="p-6 pt-0 flex justify-between items-center border-t border-slate-50 mt-4">
+                          <span className="text-xs font-bold text-slate-500">
+                            {enrollment.course.lessons?.length || 0} Lessons
+                          </span>
+                          <button
+                            onClick={() => navigate(`/course/${enrollment.course.id}/play`)}
+                            className="px-4.5 py-2 bg-slate-900 hover:bg-blue-600 text-white rounded-xl font-bold text-xs transition-colors flex items-center gap-1.5"
+                          >
+                            <span>Play Class</span>
+                            <ChevronRight size={14} />
+                          </button>
                         </div>
                       </div>
-                      <div className="p-6 pt-0 flex justify-between items-center border-t border-slate-50 mt-4">
-                        <span className="text-xs font-bold text-slate-500">
-                          {dashboardData.lastActiveEnrollment.course.lessons?.length || 0} Lessons
-                        </span>
-                        <button
-                          onClick={handleResumeCourse}
-                          className="px-4.5 py-2 bg-slate-900 hover:bg-blue-600 text-white rounded-xl font-bold text-xs transition-colors flex items-center gap-1.5"
-                        >
-                          <span>Play Class</span>
-                          <ChevronRight size={14} />
-                        </button>
-                      </div>
-                    </div>
+                    ))}
                   </div>
                 ) : (
-                  <div className="p-8 text-center text-slate-400">No active course registrations found.</div>
+                  <div className="p-12 text-center border border-dashed border-slate-200 rounded-3xl text-sm space-y-4">
+                    <p className="text-slate-400 font-medium">No active course registrations found. Explore our course catalog to unlock learning tracks!</p>
+                    <button
+                      onClick={() => navigate("/home")}
+                      className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold transition-all shadow"
+                    >
+                      Explore Courses
+                    </button>
+                  </div>
                 )}
               </div>
             )}
@@ -920,6 +950,37 @@ export const Mylearning = () => {
                       {updateProfileMutation.isPending ? "Saving..." : "Save Preferences"}
                     </button>
                   </form>
+                </div>
+
+                {/* Billing & Payments History */}
+                <div className="p-6 bg-white border border-slate-200/80 rounded-3xl shadow-sm space-y-6">
+                  <div className="flex flex-col gap-1">
+                    <h3 className="font-extrabold text-slate-800 text-sm">Billing & Purchases Ledger</h3>
+                    <p className="text-[11px] text-slate-400">Review transactions, discount coupons, and purchase receipts for enrolled courses.</p>
+                  </div>
+                  <div className="divide-y divide-slate-100">
+                    {billingHistory?.map((pay) => (
+                      <div key={pay.id} className="py-3 flex justify-between items-center text-xs">
+                        <div className="text-left space-y-0.5">
+                          <h4 className="font-extrabold text-slate-800">{pay.course?.title}</h4>
+                          <span className="text-[10px] text-slate-400 block font-medium">
+                            Txn: {pay.transactionId} • {new Date(pay.createdAt).toLocaleDateString()}
+                          </span>
+                        </div>
+                        <div className="text-right shrink-0 space-y-0.5">
+                          <span className="font-extrabold text-slate-800 block">${pay.amount?.toFixed(2)}</span>
+                          <span className="px-2 py-0.5 bg-emerald-50 text-emerald-600 rounded-full text-[9px] font-bold uppercase tracking-wider block text-center">
+                            {pay.paymentStatus}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                    {(!billingHistory || billingHistory.length === 0) && (
+                      <div className="text-center text-slate-400 py-4 text-xs font-medium">
+                        No transactions recorded.
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
             )}

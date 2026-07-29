@@ -62,6 +62,9 @@ public class Users {
 
     private java.time.LocalDate last_learning_date;
 
+    @Column(name = "approved", nullable = false)
+    private Boolean approved = true;
+
     @OneToMany(mappedBy = "trainer", cascade = CascadeType.ALL)
     @JsonManagedReference
     private List<Courses> courses;

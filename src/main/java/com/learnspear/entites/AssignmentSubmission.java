@@ -2,6 +2,7 @@ package com.learnspear.entites;
 
 import jakarta.persistence.*;
 import lombok.*;
+
 import java.time.LocalDateTime;
 
 @Entity
@@ -10,29 +11,26 @@ import java.time.LocalDateTime;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "project_submission")
-public class ProjectSubmission {
+@Table(name = "assignment_submissions")
+public class AssignmentSubmission {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "project_id", nullable = false)
-    private Project project;
+    @JoinColumn(name = "assignment_id", nullable = false)
+    private Assignment assignment;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "student_id", nullable = false)
     private Users student;
 
-    @Column(name = "github_url")
-    private String githubUrl;
+    @Column(name = "submission_text", columnDefinition = "TEXT")
+    private String submissionText;
 
-    @Column(name = "live_demo")
-    private String liveDemo;
-
-    @Column(columnDefinition = "TEXT")
-    private String notes;
+    @Column(name = "file_url")
+    private String fileUrl;
 
     @Column(name = "submitted_at")
     @Builder.Default
@@ -40,9 +38,9 @@ public class ProjectSubmission {
 
     @Column(length = 50)
     @Builder.Default
-    private String status = "SUBMITTED"; // SUBMITTED, REVIEWED, REJECTED, APPROVED
+    private String status = "SUBMITTED"; // SUBMITTED, GRADED, RESUBMITTED
 
-    private Integer score;
+    private Integer grade;
 
     @Column(columnDefinition = "TEXT")
     private String feedback;
