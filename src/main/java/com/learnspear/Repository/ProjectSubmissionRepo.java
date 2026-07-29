@@ -2,6 +2,7 @@ package com.learnspear.Repository;
 
 import com.learnspear.entites.ProjectSubmission;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 import java.util.List;
 import java.util.Optional;
@@ -11,4 +12,7 @@ public interface ProjectSubmissionRepo extends JpaRepository<ProjectSubmission, 
     List<ProjectSubmission> findByStudentId(Long studentId);
     Optional<ProjectSubmission> findByStudentIdAndProjectId(Long studentId, Long projectId);
     List<ProjectSubmission> findByProjectId(Long projectId);
+
+    @Query("SELECT ps FROM ProjectSubmission ps WHERE ps.project.course.id = :courseId")
+    List<ProjectSubmission> findByCourseId(Long courseId);
 }

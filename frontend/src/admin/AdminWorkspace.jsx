@@ -5,19 +5,15 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "react-toastify";
 import { logout } from "../store/AuthSlice";
 import {
-  LayoutDashboard,
-  Users,
-  ShieldCheck,
-  UserCheck,
-  Search,
-  LogOut,
-  Sparkles,
-  BookOpen
+  LayoutDashboard, Users, UserCheck, ShieldCheck, Search, LogOut, Sparkles, BookOpen,
+  Plus, Trash2, CheckCircle, XCircle, Megaphone, DollarSign, ExternalLink, ShieldAlert,
+  ArrowUpRight, Star, Tag, Layers, RefreshCw, X, Check
 } from "lucide-react";
 import {
-  fetchAdminDashboard,
-  approveTrainerProfile,
-  toggleUserStatus
+  fetchAdminDashboard, fetchAllTrainers, fetchPendingTrainers, approveTrainerProfile,
+  rejectTrainerProfile, toggleUserStatus, fetchAllStudents, searchUsers, fetchAdminCourses,
+  adminApproveCourse, adminRejectCourse, adminFeatureCourse, adminHideCourse,
+  fetchAdminAnnouncements, createAdminAnnouncement, deleteAdminAnnouncement
 } from "../Api/adminApi";
 
 export const AdminWorkspace = () => {
@@ -27,35 +23,130 @@ export const AdminWorkspace = () => {
   const queryClient = useQueryClient();
 
   const [activeTab, setActiveTab] = useState("dashboard");
-  const [searchQuery, setSearchQuery] = useState("");
+  const [userQuery, setUserQuery] = useState("");
+  const [userRoleFilter, setUserRoleFilter] = useState("All");
+
+  // Announcement form state
+  const [annTitle, setAnnTitle] = useState("");
+  const [annMessage, setAnnMessage] = useState("");
+  const [annType, setAnnType] = useState("GLOBAL");
+
+  // Course rejection reason modal
+  const [rejectingCourseId, setRejectingCourseId] = useState(null);
+  const [courseRejectReason, setCourseRejectReason] = useState("");
+
+  // Trainer rejection reason modal
+  const [rejectingTrainerId, setRejectingTrainerId] = useState(null);
+  const [trainerRejectReason, setTrainerRejectReason] = useState("");
 
   // Queries
-  const { data: dashboardData, isLoading } = useQuery({
+  const { data: dashboard, isLoading: dashLoading } = useQuery({
     queryKey: ["adminDashboard"],
     queryFn: fetchAdminDashboard,
     enabled: !!user,
   });
 
+  const { data: courses = [], isLoading: coursesLoading } = useQuery({
+    queryKey: ["adminCourses"],
+    queryFn: fetchAdminCourses,
+    enabled: activeTab === "courses" || activeTab === "dashboard",
+  });
+
+  const { data: announcements = [], isLoading: annLoading } = useQuery({
+    queryKey: ["adminAnnouncements"],
+    queryFn: fetchAdminAnnouncements,
+    enabled: activeTab === "announcements",
+  });
+
+  const { data: searchedUsers = [] } = useQuery({
+    queryKey: ["searchedUsers", userQuery],
+    queryFn: () => searchUsers(userQuery),
+    enabled: activeTab === "users",
+  });
+
   // Mutations
-  const approveMutation = useMutation({
+  const approveTrainerMutation = useMutation({
     mutationFn: approveTrainerProfile,
     onSuccess: () => {
-      toast.success("Trainer profile approved successfully! 🎉");
+      toast.success("Trainer approved! 🎉");
       queryClient.invalidateQueries(["adminDashboard"]);
     },
-    onError: (err) => {
-      toast.error("Trainer approval failed: " + err.message);
+    onError: (err) => toast.error("Error: " + err.message)
+  });
+
+  const rejectTrainerMutation = useMutation({
+    mutationFn: rejectTrainerProfile,
+    onSuccess: () => {
+      toast.success("Trainer request rejected.");
+      setRejectingTrainerId(null);
+      setTrainerRejectReason("");
+      queryClient.invalidateQueries(["adminDashboard"]);
+    },
+    onError: (err) => toast.error("Error: " + err.message)
+  });
+
+  const toggleUserStatusMutation = useMutation({
+    mutationFn: toggleUserStatus,
+    onSuccess: () => {
+      toast.success("User approval status toggled successfully!");
+      queryClient.invalidateQueries(["adminDashboard"]);
+      queryClient.invalidateQueries(["searchedUsers"]);
+    },
+    onError: (err) => toast.error("Status toggle failed: " + err.message)
+  });
+
+  const approveCourseMutation = useMutation({
+    mutationFn: adminApproveCourse,
+    onSuccess: () => {
+      toast.success("Course approved and published! 🚀");
+      queryClient.invalidateQueries(["adminCourses"]);
+    },
+    onError: (err) => toast.error("Approve course failed: " + err.message)
+  });
+
+  const rejectCourseMutation = useMutation({
+    mutationFn: adminRejectCourse,
+    onSuccess: () => {
+      toast.success("Course rejected and trainer notified.");
+      setRejectingCourseId(null);
+      setCourseRejectReason("");
+      queryClient.invalidateQueries(["adminCourses"]);
+    },
+    onError: (err) => toast.error("Reject course failed: " + err.message)
+  });
+
+  const featureCourseMutation = useMutation({
+    mutationFn: adminFeatureCourse,
+    onSuccess: () => {
+      toast.success("Course status updated to FEATURED.");
+      queryClient.invalidateQueries(["adminCourses"]);
     }
   });
 
-  const toggleStatusMutation = useMutation({
-    mutationFn: toggleUserStatus,
-    onSuccess: (data) => {
-      toast.success(`User status updated to ${data.approved ? "Active" : "Suspended"}`);
-      queryClient.invalidateQueries(["adminDashboard"]);
+  const hideCourseMutation = useMutation({
+    mutationFn: adminHideCourse,
+    onSuccess: () => {
+      toast.success("Course status updated to HIDDEN.");
+      queryClient.invalidateQueries(["adminCourses"]);
+    }
+  });
+
+  const createAnnouncementMutation = useMutation({
+    mutationFn: createAdminAnnouncement,
+    onSuccess: () => {
+      toast.success("Announcement broadcasted! 📢");
+      setAnnTitle("");
+      setAnnMessage("");
+      queryClient.invalidateQueries(["adminAnnouncements"]);
     },
-    onError: (err) => {
-      toast.error("Status toggle failed: " + err.message);
+    onError: (err) => toast.error("Broadcast failed: " + err.message)
+  });
+
+  const deleteAnnouncementMutation = useMutation({
+    mutationFn: deleteAdminAnnouncement,
+    onSuccess: () => {
+      toast.success("Announcement removed.");
+      queryClient.invalidateQueries(["adminAnnouncements"]);
     }
   });
 
@@ -65,359 +156,363 @@ export const AdminWorkspace = () => {
     navigate("/login");
   };
 
-  const filteredUsers = dashboardData?.allUsers?.filter(u => 
-    u.username.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    u.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    u.role.toLowerCase().includes(searchQuery.toLowerCase())
-  ) || [];
-
-  if (isLoading) {
+  if (dashLoading) {
     return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+      <div className="min-h-screen bg-slate-900 text-white flex items-center justify-center">
         <div className="flex flex-col items-center gap-3">
-          <div className="w-10 h-10 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
-          <span className="text-sm text-slate-500 font-bold tracking-wider">Loading Platform Console...</span>
+          <div className="w-12 h-12 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
+          <span className="text-sm font-semibold tracking-wider text-slate-400">Loading Platform Console...</span>
         </div>
       </div>
     );
   }
 
+  // Filter searched users list locally if role filter is set
+  const filteredUsers = searchedUsers.filter(u => {
+    if (userRoleFilter === "All") return true;
+    return u.role === userRoleFilter;
+  });
+
   return (
-    <div className="min-h-screen bg-slate-50 flex font-sans">
+    <div className="min-h-screen bg-[#0b0f19] text-slate-200 flex font-sans">
       
-      {/* ----------------- SIDEBAR ----------------- */}
-      <aside className="w-64 border-r border-slate-200/80 bg-white flex flex-col justify-between shrink-0 h-screen sticky top-0">
-        <div className="p-6 space-y-8">
-          {/* Logo banner */}
-          <div className="flex items-center gap-2 group cursor-pointer" onClick={() => navigate("/")}>
-            <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center text-white font-extrabold text-lg shadow-sm shadow-blue-500/20">
-              L
+      {/* ── SIDEBAR NAV ── */}
+      <aside className="w-72 bg-[#111827] border-r border-slate-800 flex flex-col justify-between py-8 px-5 shrink-0">
+        <div className="space-y-8">
+          <div className="flex items-center gap-3 px-3">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-cyan-500 to-indigo-500 flex items-center justify-center text-white shadow-lg shadow-indigo-500/20">
+              <Sparkles size={20} />
             </div>
-            <span className="font-extrabold text-slate-800 text-lg tracking-tight">LearnSpear</span>
-            <span className="px-1.5 py-0.5 bg-blue-50 text-blue-600 text-[9px] font-bold rounded uppercase tracking-wider">Admin</span>
+            <div>
+              <h2 className="font-bold text-lg tracking-tight text-white">LearnSphear</h2>
+              <span className="text-xs text-indigo-400 font-semibold uppercase tracking-wider">Platform Operations</span>
+            </div>
           </div>
 
-          {/* Nav links */}
-          <div className="space-y-1">
-            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-3 block">management</span>
-            <nav className="flex flex-col gap-1 pt-2">
-              <button
-                onClick={() => setActiveTab("dashboard")}
-                className={`flex items-center gap-3 px-3 py-2.5 rounded-xl font-semibold text-sm transition-all ${
-                  activeTab === "dashboard"
-                    ? "bg-blue-50 text-blue-600 shadow-sm shadow-blue-500/5"
-                    : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
-                }`}
-              >
-                <LayoutDashboard size={18} />
-                <span>Dashboard</span>
-              </button>
-
-              <button
-                onClick={() => setActiveTab("approvals")}
-                className={`flex items-center justify-between px-3 py-2.5 rounded-xl font-semibold text-sm transition-all ${
-                  activeTab === "approvals"
-                    ? "bg-blue-50 text-blue-600 shadow-sm shadow-blue-500/5"
-                    : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
-                }`}
-              >
-                <div className="flex items-center gap-3">
-                  <ShieldCheck size={18} />
-                  <span>Approvals</span>
-                </div>
-                {dashboardData?.pendingTrainersCount > 0 && (
-                  <span className="px-2 py-0.5 bg-amber-500 text-white rounded-full text-[10px] font-bold">
-                    {dashboardData.pendingTrainersCount}
-                  </span>
-                )}
-              </button>
-
-              <button
-                onClick={() => setActiveTab("users")}
-                className={`flex items-center gap-3 px-3 py-2.5 rounded-xl font-semibold text-sm transition-all ${
-                  activeTab === "users"
-                    ? "bg-blue-50 text-blue-600 shadow-sm shadow-blue-500/5"
-                    : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
-                }`}
-              >
-                <Users size={18} />
-                <span>Users Control</span>
-              </button>
-            </nav>
-          </div>
-        </div>
-
-        {/* User Card & Logout */}
-        <div className="p-4 border-t border-slate-100 space-y-3">
-          <div className="flex items-center gap-3 p-2">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-slate-800 to-slate-900 flex items-center justify-center text-white font-extrabold text-sm">
+          <div className="px-3 py-2 bg-slate-800/40 rounded-xl border border-slate-700/50 flex items-center gap-3">
+            <div className="w-8 h-8 rounded-lg bg-indigo-500/20 text-indigo-400 flex items-center justify-center font-bold text-sm">
               AD
             </div>
-            <div className="text-left">
-              <h4 className="font-extrabold text-xs text-slate-800">{user?.username}</h4>
-              <span className="text-[9px] text-slate-400 uppercase font-bold tracking-wider">Super Administrator</span>
+            <div className="min-w-0">
+              <p className="text-xs text-slate-400 font-medium">Administrator</p>
+              <h4 className="text-sm font-semibold text-slate-200 truncate">{user?.username}</h4>
             </div>
           </div>
+
+          <nav className="space-y-1">
+            <button
+              onClick={() => setActiveTab("dashboard")}
+              className={`w-full flex items-center gap-3.5 px-4 py-3 rounded-xl font-medium text-sm transition-all ${
+                activeTab === "dashboard"
+                  ? "bg-indigo-600 text-white shadow-lg shadow-indigo-600/25"
+                  : "text-slate-400 hover:bg-slate-800/50 hover:text-slate-200"
+              }`}
+            >
+              <LayoutDashboard size={18} />
+              <span>Operations Board</span>
+            </button>
+
+            <button
+              onClick={() => setActiveTab("trainers")}
+              className={`w-full flex items-center gap-3.5 px-4 py-3 rounded-xl font-medium text-sm transition-all ${
+                activeTab === "trainers"
+                  ? "bg-indigo-600 text-white shadow-lg shadow-indigo-600/25"
+                  : "text-slate-400 hover:bg-slate-800/50 hover:text-slate-200"
+              }`}
+            >
+              <UserCheck size={18} />
+              <span>Trainer Approvals</span>
+              {dashboard?.pendingTrainers?.length > 0 && (
+                <span className="ml-auto bg-amber-500 text-[#0b0f19] px-2 py-0.5 rounded-full text-[10px] font-extrabold">
+                  {dashboard.pendingTrainers.length}
+                </span>
+              )}
+            </button>
+
+            <button
+              onClick={() => setActiveTab("users")}
+              className={`w-full flex items-center gap-3.5 px-4 py-3 rounded-xl font-medium text-sm transition-all ${
+                activeTab === "users"
+                  ? "bg-indigo-600 text-white shadow-lg shadow-indigo-600/25"
+                  : "text-slate-400 hover:bg-slate-800/50 hover:text-slate-200"
+              }`}
+            >
+              <Users size={18} />
+              <span>User Registry</span>
+            </button>
+
+            <button
+              onClick={() => setActiveTab("courses")}
+              className={`w-full flex items-center gap-3.5 px-4 py-3 rounded-xl font-medium text-sm transition-all ${
+                activeTab === "courses"
+                  ? "bg-indigo-600 text-white shadow-lg shadow-indigo-600/25"
+                  : "text-slate-400 hover:bg-slate-800/50 hover:text-slate-200"
+              }`}
+            >
+              <BookOpen size={18} />
+              <span>Course Moderation</span>
+            </button>
+
+            <button
+              onClick={() => setActiveTab("announcements")}
+              className={`w-full flex items-center gap-3.5 px-4 py-3 rounded-xl font-medium text-sm transition-all ${
+                activeTab === "announcements"
+                  ? "bg-indigo-600 text-white shadow-lg shadow-indigo-600/25"
+                  : "text-slate-400 hover:bg-slate-800/50 hover:text-slate-200"
+              }`}
+            >
+              <Megaphone size={18} />
+              <span>Broadcast Center</span>
+            </button>
+          </nav>
+        </div>
+
+        <div>
           <button
             onClick={handleLogout}
-            className="w-full py-2.5 hover:bg-red-50 text-slate-500 hover:text-red-600 rounded-xl font-bold text-xs flex items-center justify-center gap-2 border border-slate-100 transition-colors"
+            className="w-full flex items-center gap-3.5 px-4 py-3 rounded-xl font-medium text-sm text-red-400 hover:bg-red-500/10 transition-all"
           >
-            <LogOut size={14} />
-            <span>Logout Panel</span>
+            <LogOut size={18} />
+            <span>Sign Out</span>
           </button>
         </div>
       </aside>
 
-      {/* ----------------- MAIN VIEW ----------------- */}
-      <main className="flex-1 flex flex-col min-w-0 overflow-y-auto h-screen">
+      {/* ── MAIN CONTENT WORKSPACE ── */}
+      <main className="flex-1 min-w-0 flex flex-col">
         
-        {/* Header banner */}
-        <header className="p-6 bg-white border-b border-slate-200/80 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <h1 className="text-xl font-extrabold text-slate-800 tracking-tight">Platform Administration Console</h1>
-            <Sparkles size={16} className="text-blue-500 animate-pulse" />
+        {/* Global Action Header */}
+        <header className="h-20 bg-[#111827]/40 border-b border-slate-800 flex items-center justify-between px-8 backdrop-blur-md">
+          <div className="text-lg font-bold text-white tracking-tight">
+            LearnSphear Operations Control Panel
           </div>
-          <span className="text-xs text-slate-400 font-medium">Last synced: Just now</span>
+          <div className="text-xs font-semibold text-slate-400">
+            System Live status: <span className="text-emerald-400">Operational</span>
+          </div>
         </header>
 
-        {/* Tab Panel contents */}
-        <div className="flex-1 p-8 max-w-6xl mx-auto w-full space-y-8">
+        <div className="flex-1 overflow-y-auto p-8">
           
-          {/* ==================== TAB: DASHBOARD ==================== */}
+          {/* ═══════════════════════════════════════════════════════════
+              DASHBOARD TAB
+          ══════════════════════════════════════════════════════════════ */}
           {activeTab === "dashboard" && (
-            <div className="space-y-8 animate-fade-in text-left">
-              
-              {/* Stat Cards Grid */}
-              <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
-                {[
-                  { label: "total members", value: dashboardData?.totalUsers, icon: Users, color: "from-blue-500 to-indigo-500 shadow-blue-500/10" },
-                  { label: "enrolled students", value: dashboardData?.studentCount, icon: UserCheck, color: "from-emerald-500 to-teal-500 shadow-emerald-500/10" },
-                  { label: "certified trainers", value: dashboardData?.trainerCount, icon: ShieldCheck, color: "from-violet-500 to-fuchsia-500 shadow-violet-500/10" },
-                  { label: "published courses", value: dashboardData?.courseCount, icon: BookOpen, color: "from-amber-500 to-orange-500 shadow-amber-500/10" }
-                ].map((stat, idx) => (
-                  <div key={idx} className="p-6 bg-white border border-slate-200/80 rounded-3xl shadow-sm space-y-4 relative overflow-hidden group hover:border-slate-300 transition-all">
-                    <div className="flex justify-between items-center">
-                      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{stat.label}</span>
-                      <div className={`w-8 h-8 rounded-xl bg-gradient-to-tr ${stat.color} flex items-center justify-center text-white shadow`}>
-                        <stat.icon size={16} />
-                      </div>
-                    </div>
-                    <div>
-                      <h3 className="text-3xl font-extrabold text-slate-800 tracking-tight">{stat.value}</h3>
-                    </div>
-                  </div>
-                ))}
+            <div className="space-y-8">
+              <div>
+                <h1 className="text-2xl font-bold text-white tracking-tight">System Statistics</h1>
+                <p className="text-slate-400 text-sm mt-1">Operational summaries, student registries, and trainer lists.</p>
               </div>
 
-              {/* Action notice for pending trainers */}
-              {dashboardData?.pendingTrainersCount > 0 && (
-                <div className="p-6 rounded-3xl bg-amber-50/60 border border-amber-100 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                  <div className="space-y-1">
-                    <h4 className="font-extrabold text-amber-800 text-sm">Pending Instructor Registrations</h4>
-                    <p className="text-xs text-amber-600 font-medium">There are {dashboardData.pendingTrainersCount} trainer profiles awaiting approval. Approve them to let them publish classes.</p>
+              {/* Stats Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                <div className="bg-[#111827] border border-slate-800 rounded-2xl p-6 flex items-center gap-5">
+                  <div className="w-12 h-12 bg-indigo-500/10 text-indigo-400 rounded-xl flex items-center justify-center">
+                    <Users size={24} />
                   </div>
-                  <button
-                    onClick={() => setActiveTab("approvals")}
-                    className="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-xl font-bold text-xs shadow transition-colors"
-                  >
-                    View Approvals List
-                  </button>
+                  <div>
+                    <span className="text-2xl font-bold text-white">{dashboard?.totalUsers || 0}</span>
+                    <p className="text-slate-400 text-xs font-semibold mt-1">Platform Accounts</p>
+                  </div>
                 </div>
-              )}
 
-              {/* Recent Activity lists */}
-              <div className="grid lg:grid-cols-2 gap-6">
-                
-                {/* Users preview */}
-                <div className="p-6 bg-white border border-slate-200/80 rounded-3xl shadow-sm space-y-6">
-                  <div className="flex justify-between items-center">
-                    <h3 className="font-extrabold text-slate-800 text-sm">Recent Users</h3>
-                    <button onClick={() => setActiveTab("users")} className="text-xs font-bold text-blue-600 hover:underline">
-                      Manage All
-                    </button>
+                <div className="bg-[#111827] border border-slate-800 rounded-2xl p-6 flex items-center gap-5">
+                  <div className="w-12 h-12 bg-cyan-500/10 text-cyan-400 rounded-xl flex items-center justify-center">
+                    <Users size={24} />
                   </div>
-                  <div className="divide-y divide-slate-100">
-                    {dashboardData?.allUsers?.slice(-4).map((user) => (
-                      <div key={user.id} className="py-3 flex justify-between items-center">
-                        <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 rounded-xl bg-slate-100 flex items-center justify-center font-extrabold text-xs text-slate-600">
-                            {user.username.slice(0, 2).toUpperCase()}
-                          </div>
-                          <div className="text-left">
-                            <h4 className="font-extrabold text-xs text-slate-800">{user.username}</h4>
-                            <span className="text-[10px] text-slate-400 font-medium">{user.email}</span>
-                          </div>
+                  <div>
+                    <span className="text-2xl font-bold text-white">{dashboard?.studentCount || 0}</span>
+                    <p className="text-slate-400 text-xs font-semibold mt-1">Total Students</p>
+                  </div>
+                </div>
+
+                <div className="bg-[#111827] border border-slate-800 rounded-2xl p-6 flex items-center gap-5">
+                  <div className="w-12 h-12 bg-violet-500/10 text-violet-400 rounded-xl flex items-center justify-center">
+                    <UserCheck size={24} />
+                  </div>
+                  <div>
+                    <span className="text-2xl font-bold text-white">{dashboard?.trainerCount || 0}</span>
+                    <p className="text-slate-400 text-xs font-semibold mt-1">Total Trainers</p>
+                  </div>
+                </div>
+
+                <div className="bg-[#111827] border border-slate-800 rounded-2xl p-6 flex items-center gap-5">
+                  <div className="w-12 h-12 bg-amber-500/10 text-amber-400 rounded-xl flex items-center justify-center">
+                    <ShieldAlert size={24} />
+                  </div>
+                  <div>
+                    <span className="text-2xl font-bold text-white">{dashboard?.pendingTrainersCount || 0}</span>
+                    <p className="text-slate-400 text-xs font-semibold mt-1">Pending Approvals</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Bottom Sections: Pending Trainer registrations */}
+              <div className="bg-[#111827] border border-slate-800 rounded-2xl p-6 space-y-5">
+                <h3 className="text-sm font-bold text-white uppercase tracking-wider">Pending Instructor Approvals</h3>
+                {dashboard?.pendingTrainers?.length === 0 ? (
+                  <p className="text-slate-500 text-xs">No pending trainer profile requests.</p>
+                ) : (
+                  <div className="divide-y divide-slate-800">
+                    {dashboard?.pendingTrainers?.map((trainer) => (
+                      <div key={trainer.id} className="py-4 first:pt-0 flex items-center justify-between">
+                        <div>
+                          <h4 className="text-sm font-semibold text-slate-200">{trainer.username}</h4>
+                          <span className="text-xs text-slate-400 mt-1 block">{trainer.email}</span>
+                          {trainer.bio && <p className="text-xs text-slate-500 mt-1.5 line-clamp-1 italic">"{trainer.bio}"</p>}
                         </div>
-                        <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider ${
-                          user.role === "ADMIN" ? "bg-purple-50 text-purple-600" :
-                          user.role === "TRAINER" ? "bg-violet-50 text-violet-600" :
-                          "bg-emerald-50 text-emerald-600"
-                        }`}>
-                          {user.role}
-                        </span>
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={() => approveTrainerMutation.mutate(trainer.id)}
+                            className="bg-emerald-600 hover:bg-emerald-500 text-white px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all"
+                          >
+                            Approve
+                          </button>
+                          <button
+                            onClick={() => setRejectingTrainerId(trainer.id)}
+                            className="bg-red-500/10 hover:bg-red-500 text-red-400 hover:text-white px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all"
+                          >
+                            Reject
+                          </button>
+                        </div>
                       </div>
                     ))}
-                  </div>
-                </div>
-
-                {/* System events dummy ledger */}
-                <div className="p-6 bg-white border border-slate-200/80 rounded-3xl shadow-sm space-y-6">
-                  <h3 className="font-extrabold text-slate-800 text-sm">Platform Health & Status</h3>
-                  <div className="space-y-4">
-                    <div className="flex justify-between items-center text-xs">
-                      <span className="text-slate-500 font-medium">Database Connection:</span>
-                      <span className="px-2 py-0.5 bg-emerald-50 text-emerald-600 rounded-full font-bold uppercase">Healthy</span>
-                    </div>
-                    <div className="flex justify-between items-center text-xs">
-                      <span className="text-slate-500 font-medium">Authentication Gate:</span>
-                      <span className="px-2 py-0.5 bg-emerald-50 text-emerald-600 rounded-full font-bold uppercase">JWT Active</span>
-                    </div>
-                    <div className="flex justify-between items-center text-xs">
-                      <span className="text-slate-500 font-medium">API Gateway Traffic:</span>
-                      <span className="px-2 py-0.5 bg-blue-50 text-blue-600 rounded-full font-bold uppercase">Normal</span>
-                    </div>
-                    <div className="flex justify-between items-center text-xs">
-                      <span className="text-slate-500 font-medium">Environment Version:</span>
-                      <span className="font-bold text-slate-800">LearnSphere v2.1-prod</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* ==================== TAB: APPROVALS ==================== */}
-          {activeTab === "approvals" && (
-            <div className="space-y-6 animate-fade-in text-left">
-              <div className="flex flex-col gap-2">
-                <h2 className="text-2xl font-extrabold text-slate-800 tracking-tight">Instructor Profile Approvals</h2>
-                <p className="text-sm text-slate-500">Review credential documents and profiles for trainers requesting access to publish courses.</p>
-              </div>
-
-              <div className="space-y-4">
-                {dashboardData?.pendingTrainers?.map((trainer) => (
-                  <div key={trainer.id} className="p-6 bg-white border border-slate-200/80 rounded-3xl shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
-                    <div className="flex items-start gap-4">
-                      <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-violet-600 to-indigo-600 text-white flex items-center justify-center font-extrabold text-base">
-                        {trainer.username.slice(0, 2).toUpperCase()}
-                      </div>
-                      <div className="space-y-1 text-left">
-                        <h3 className="font-extrabold text-slate-800 text-base">{trainer.username}</h3>
-                        <p className="text-xs text-slate-400">{trainer.email}</p>
-                        <p className="text-xs text-slate-500 pt-1 leading-relaxed max-w-md">{trainer.bio || "No bio added. Profile is ready for review."}</p>
-                        {trainer.linkedin_url && (
-                          <div className="flex gap-4 pt-2">
-                            <a href={trainer.linkedin_url} target="_blank" rel="noreferrer" className="text-[10px] font-bold text-blue-600 hover:underline">
-                              LinkedIn Profile
-                            </a>
-                            {trainer.resume_url && (
-                              <a href={trainer.resume_url} target="_blank" rel="noreferrer" className="text-[10px] font-bold text-blue-600 hover:underline">
-                                CV / Resume Document
-                              </a>
-                            )}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                    <div className="flex gap-3 shrink-0">
-                      <button
-                        onClick={() => approveMutation.mutate(trainer.id)}
-                        disabled={approveMutation.isPending}
-                        className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold text-xs shadow-md transition-colors"
-                      >
-                        {approveMutation.isPending ? "Approving..." : "Approve Profile"}
-                      </button>
-                    </div>
-                  </div>
-                ))}
-
-                {(!dashboardData?.pendingTrainers || dashboardData.pendingTrainers.length === 0) && (
-                  <div className="p-12 text-center text-slate-400 border border-dashed border-slate-200 rounded-3xl text-sm">
-                    No instructor accounts pending approval at the moment. All registered trainers are verified!
                   </div>
                 )}
               </div>
             </div>
           )}
 
-          {/* ==================== TAB: USERS CONTROL ==================== */}
-          {activeTab === "users" && (
-            <div className="space-y-6 animate-fade-in text-left">
-              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                <div className="space-y-1">
-                  <h2 className="text-2xl font-extrabold text-slate-800 tracking-tight">Platform Users Control</h2>
-                  <p className="text-sm text-slate-500">Audit, search, and toggle authorization status for all students and trainers on LearnSpear.</p>
-                </div>
+          {/* ═══════════════════════════════════════════════════════════
+              TRAINER APPROVALS TAB
+          ══════════════════════════════════════════════════════════════ */}
+          {activeTab === "trainers" && (
+            <div className="space-y-6">
+              <div>
+                <h1 className="text-2xl font-bold text-white tracking-tight">Trainer Profiles</h1>
+                <p className="text-slate-400 text-sm mt-1">Review profiles and enable system publication capabilities.</p>
+              </div>
 
-                {/* Search Bar */}
-                <div className="relative w-full sm:w-72 shrink-0">
-                  <Search size={14} className="absolute left-3.5 top-1/2 transform -translate-y-1/2 text-slate-400" />
+              <div className="bg-[#111827] border border-slate-800 rounded-2xl p-6">
+                <h3 className="font-bold text-white text-sm uppercase tracking-wider mb-4">Pending Requests</h3>
+                {!dashboard?.pendingTrainers || dashboard.pendingTrainers.length === 0 ? (
+                  <div className="text-center py-12 text-slate-500 text-xs">
+                    No trainer registrations waiting for verification.
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {dashboard.pendingTrainers.map(trainer => (
+                      <div key={trainer.id} className="bg-slate-900 border border-slate-800 rounded-xl p-5 space-y-4">
+                        <div>
+                          <h4 className="font-bold text-slate-200 text-sm">{trainer.username}</h4>
+                          <p className="text-xs text-slate-400 mt-0.5">{trainer.email}</p>
+                        </div>
+                        {trainer.bio && (
+                          <div className="bg-[#0b0f19]/60 p-3 rounded-lg border border-slate-800 text-xs text-slate-400 italic">
+                            "{trainer.bio}"
+                          </div>
+                        )}
+                        <div className="flex gap-3">
+                          <button
+                            onClick={() => approveTrainerMutation.mutate(trainer.id)}
+                            className="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white py-2 rounded-lg text-xs font-bold transition-all"
+                          >
+                            Approve Profile
+                          </button>
+                          <button
+                            onClick={() => setRejectingTrainerId(trainer.id)}
+                            className="flex-1 bg-red-500/10 hover:bg-red-500 text-red-400 hover:text-white py-2 rounded-lg text-xs font-bold transition-all"
+                          >
+                            Reject
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* ═══════════════════════════════════════════════════════════
+              USER REGISTRY TAB
+          ══════════════════════════════════════════════════════════════ */}
+          {activeTab === "users" && (
+            <div className="space-y-6">
+              <div>
+                <h1 className="text-2xl font-bold text-white tracking-tight">Platform Accounts</h1>
+                <p className="text-slate-400 text-sm mt-1">Suspend, view user roles, search registry and manage access controls.</p>
+              </div>
+
+              {/* Filters */}
+              <div className="flex flex-wrap items-center justify-between gap-4">
+                <div className="relative w-80">
+                  <Search className="absolute left-3.5 top-2.5 text-slate-500" size={16} />
                   <input
                     type="text"
-                    placeholder="Search username, email, role..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full bg-white border border-slate-200 rounded-xl pl-9 pr-4 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-500"
+                    placeholder="Search users..."
+                    value={userQuery}
+                    onChange={(e) => setUserQuery(e.target.value)}
+                    className="w-full bg-[#111827] border border-slate-800 rounded-xl pl-10 pr-4 py-2 text-xs text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
                   />
+                </div>
+                <div className="flex gap-2">
+                  {["All", "STUDENT", "TRAINER", "ADMIN"].map(role => (
+                    <button
+                      key={role}
+                      onClick={() => setUserRoleFilter(role)}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                        userRoleFilter === role
+                          ? "bg-indigo-650 text-white"
+                          : "bg-[#111827] text-slate-400 hover:bg-slate-800"
+                      }`}
+                    >
+                      {role}
+                    </button>
+                  ))}
                 </div>
               </div>
 
-              {/* Table list */}
-              <div className="bg-white border border-slate-200/80 rounded-3xl shadow-sm overflow-hidden">
-                <div className="overflow-x-auto">
-                  <table className="w-full text-left text-xs border-collapse">
-                    <thead>
-                      <tr className="bg-slate-50 border-b border-slate-100 text-slate-400 font-bold uppercase tracking-wider">
-                        <th className="px-6 py-4">User</th>
-                        <th className="px-6 py-4">Role</th>
-                        <th className="px-6 py-4">Status</th>
-                        <th className="px-6 py-4">Joined Date</th>
-                        <th className="px-6 py-4 text-right">Actions</th>
+              {/* User registry Table */}
+              <div className="bg-[#111827] border border-slate-800 rounded-2xl overflow-hidden">
+                <table className="w-full text-left border-collapse">
+                  <thead>
+                    <tr className="bg-slate-800/40 border-b border-slate-800 text-slate-400 font-bold text-xs uppercase tracking-wider">
+                      <th className="p-4">Account</th>
+                      <th className="p-4">Email</th>
+                      <th className="p-4">Role</th>
+                      <th className="p-4">Status</th>
+                      <th className="p-4">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-850 text-slate-300 text-xs">
+                    {filteredUsers.length === 0 ? (
+                      <tr>
+                        <td colSpan={5} className="p-8 text-center text-slate-500">No matching accounts found.</td>
                       </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-100 font-medium">
-                      {filteredUsers.map((u) => (
-                        <tr key={u.id} className="hover:bg-slate-50/50">
-                          <td className="px-6 py-4 flex items-center gap-3">
-                            <div className="w-8 h-8 rounded-xl bg-slate-100 flex items-center justify-center font-extrabold text-xs text-slate-600 uppercase">
-                              {u.username.slice(0, 2)}
-                            </div>
-                            <div className="text-left">
-                              <h4 className="font-extrabold text-slate-800 text-xs">{u.username}</h4>
-                              <span className="text-[10px] text-slate-400">{u.email}</span>
-                            </div>
+                    ) : (
+                      filteredUsers.map(u => (
+                        <tr key={u.id} className="hover:bg-slate-800/10">
+                          <td className="p-4 font-semibold text-white">{u.username}</td>
+                          <td className="p-4">{u.email}</td>
+                          <td className="p-4">
+                            <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                              u.role === "ADMIN" ? "bg-red-500/10 text-red-400" :
+                              u.role === "TRAINER" ? "bg-violet-500/10 text-violet-400" : "bg-cyan-500/10 text-cyan-400"
+                            }`}>{u.role}</span>
                           </td>
-                          <td className="px-6 py-4">
-                            <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider ${
-                              u.role === "ADMIN" ? "bg-purple-50 text-purple-600" :
-                              u.role === "TRAINER" ? "bg-violet-50 text-violet-600" :
-                              "bg-emerald-50 text-emerald-600"
-                            }`}>
-                              {u.role}
-                            </span>
+                          <td className="p-4">
+                            <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
+                              u.approved ? "bg-emerald-500/10 text-emerald-400" : "bg-red-500/10 text-red-400"
+                            }`}>{u.approved ? "Active" : "Suspended"}</span>
                           </td>
-                          <td className="px-6 py-4">
-                            {u.approved ? (
-                              <span className="px-2 py-0.5 bg-emerald-50 text-emerald-600 rounded-full text-[9px] font-bold uppercase tracking-wider">
-                                Active
-                              </span>
-                            ) : (
-                              <span className="px-2 py-0.5 bg-red-50 text-red-600 rounded-full text-[9px] font-bold uppercase tracking-wider">
-                                Suspended
-                              </span>
-                            )}
-                          </td>
-                          <td className="px-6 py-4 text-slate-400 text-[10px]">
-                            {new Date(u.created_at).toLocaleDateString()}
-                          </td>
-                          <td className="px-6 py-4 text-right shrink-0">
+                          <td className="p-4">
                             {u.role !== "ADMIN" && (
                               <button
-                                onClick={() => toggleStatusMutation.mutate(u.id)}
-                                className={`px-3 py-1.5 rounded-lg text-[10px] font-bold transition-all ${
+                                onClick={() => toggleUserStatusMutation.mutate(u.id)}
+                                className={`px-3 py-1 rounded-lg text-xs font-bold transition-all ${
                                   u.approved
-                                    ? "bg-red-50 hover:bg-red-100 text-red-600"
-                                    : "bg-emerald-50 hover:bg-emerald-100 text-emerald-600"
+                                    ? "bg-red-500/10 hover:bg-red-500 text-red-400 hover:text-white"
+                                    : "bg-emerald-500/10 hover:bg-emerald-500 text-emerald-400 hover:text-white"
                                 }`}
                               >
                                 {u.approved ? "Suspend" : "Activate"}
@@ -425,17 +520,189 @@ export const AdminWorkspace = () => {
                             )}
                           </td>
                         </tr>
-                      ))}
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
 
-                      {filteredUsers.length === 0 && (
-                        <tr>
-                          <td colSpan="5" className="px-6 py-12 text-center text-slate-400 text-xs">
-                            No users matched your query search parameters.
-                          </td>
-                        </tr>
-                      )}
-                    </tbody>
-                  </table>
+          {/* ═══════════════════════════════════════════════════════════
+              COURSE MODERATION TAB
+          ══════════════════════════════════════════════════════════════ */}
+          {activeTab === "courses" && (
+            <div className="space-y-6">
+              <div>
+                <h1 className="text-2xl font-bold text-white tracking-tight">Course Quality Assurance</h1>
+                <p className="text-slate-400 text-sm mt-1">Review curriculum designs, details, outlines, and publish or reject courses.</p>
+              </div>
+
+              {coursesLoading ? (
+                <div className="text-center py-12"><div className="w-8 h-8 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin mx-auto"></div></div>
+              ) : courses.length === 0 ? (
+                <div className="bg-[#111827] border border-slate-800 rounded-2xl p-8 text-center text-slate-500">
+                  No courses exist on the platform.
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {courses.map(course => (
+                    <div key={course.id} className="bg-[#111827] border border-slate-800 rounded-2xl overflow-hidden flex flex-col justify-between">
+                      <div>
+                        <div className="h-40 bg-slate-800 relative flex items-center justify-center">
+                          {course.thumbnailUrl ? (
+                            <img src={course.thumbnailUrl} alt={course.title} className="w-full h-full object-cover" />
+                          ) : (
+                            <div className="w-full h-full bg-gradient-to-tr from-violet-900/60 to-indigo-900/60 flex items-center justify-center text-slate-500">
+                              <BookOpen size={44} />
+                            </div>
+                          )}
+                          <span className={`absolute top-4 right-4 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${
+                            course.status === "PUBLISHED" ? "bg-emerald-500 text-white" :
+                            course.status === "FEATURED" ? "bg-violet-600 text-white" : "bg-amber-500 text-white"
+                          }`}>{course.status}</span>
+                        </div>
+                        <div className="p-6 space-y-3">
+                          <span className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest">{course.category}</span>
+                          <h3 className="text-base font-bold text-white truncate">{course.title}</h3>
+                          <p className="text-slate-400 text-xs line-clamp-2">{course.description || "No description set."}</p>
+                          <div className="text-[10px] text-slate-400 font-semibold space-y-1">
+                            <div>Level: <span className="text-slate-300 font-normal">{course.level}</span></div>
+                            <div>Price: <span className="text-slate-300 font-normal">₹{course.price}</span></div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="p-6 border-t border-slate-800 bg-[#151c2c]/40 space-y-3">
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => approveCourseMutation.mutate(course.id)}
+                            className="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white py-2 rounded-lg text-xs font-bold transition-all"
+                          >
+                            Approve
+                          </button>
+                          <button
+                            onClick={() => setRejectingCourseId(course.id)}
+                            className="flex-1 bg-red-500/10 hover:bg-red-500 text-red-400 hover:text-white py-2 rounded-lg text-xs font-bold transition-all"
+                          >
+                            Reject
+                          </button>
+                        </div>
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => featureCourseMutation.mutate(course.id)}
+                            className="flex-1 bg-indigo-600 hover:bg-indigo-500 text-white py-1.5 rounded-lg text-[10px] font-bold transition-all"
+                          >
+                            Feature
+                          </button>
+                          <button
+                            onClick={() => hideCourseMutation.mutate(course.id)}
+                            className="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-300 py-1.5 rounded-lg text-[10px] font-bold transition-all"
+                          >
+                            Hide Course
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* ═══════════════════════════════════════════════════════════
+              BROADCAST CENTER TAB
+          ══════════════════════════════════════════════════════════════ */}
+          {activeTab === "announcements" && (
+            <div className="space-y-6">
+              <div>
+                <h1 className="text-2xl font-bold text-white tracking-tight">Platform Announcements</h1>
+                <p className="text-slate-400 text-sm mt-1">Publish bulletins and notices across user categories.</p>
+              </div>
+
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                {/* Announcement form builder */}
+                <div className="lg:col-span-1 bg-[#111827] border border-slate-800 rounded-2xl p-6 space-y-4">
+                  <h3 className="font-bold text-white text-xs uppercase tracking-wider border-b border-slate-800 pb-3">New Bulletin</h3>
+                  
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-bold text-slate-400 block">Notice Title</label>
+                    <input
+                      type="text"
+                      value={annTitle}
+                      onChange={(e) => setAnnTitle(e.target.value)}
+                      className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white"
+                      placeholder="e.g. Schedule Maintenance Notice"
+                    />
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-bold text-slate-400 block">Message Details</label>
+                    <textarea
+                      value={annMessage}
+                      onChange={(e) => setAnnMessage(e.target.value)}
+                      className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white"
+                      rows={5}
+                      placeholder="Write markdown supported announcements details..."
+                    />
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-bold text-slate-400 block">Target Audience</label>
+                    <select
+                      value={annType}
+                      onChange={(e) => setAnnType(e.target.value)}
+                      className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white"
+                    >
+                      <option value="GLOBAL">Global (Students + Trainers)</option>
+                      <option value="STUDENT">Students Only</option>
+                      <option value="TRAINER">Trainers Only</option>
+                    </select>
+                  </div>
+
+                  <button
+                    onClick={() => {
+                      if (!annTitle || !annMessage) {
+                        toast.warning("Title and Message required.");
+                        return;
+                      }
+                      createAnnouncementMutation.mutate({ title: annTitle, message: annMessage, type: annType });
+                    }}
+                    className="w-full bg-indigo-600 hover:bg-indigo-500 text-white py-2 rounded-xl text-xs font-bold transition-all shadow-md shadow-indigo-600/10"
+                  >
+                    Broadcast Announcement
+                  </button>
+                </div>
+
+                {/* Announcement log feed */}
+                <div className="lg:col-span-2 space-y-4">
+                  <h3 className="font-bold text-white text-xs uppercase tracking-wider">Broadcast History</h3>
+                  {annLoading ? (
+                    <div className="text-center py-6"><div className="w-6 h-6 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin mx-auto"></div></div>
+                  ) : announcements.length === 0 ? (
+                    <p className="text-slate-500 text-xs bg-[#111827] border border-slate-800 rounded-xl p-4">No platform broadcasts created.</p>
+                  ) : (
+                    <div className="space-y-4">
+                      {announcements.map((ann) => (
+                        <div key={ann.id} className="bg-[#111827] border border-slate-800 rounded-2xl p-6">
+                          <div className="flex justify-between items-start border-b border-slate-800/50 pb-3 mb-3">
+                            <div>
+                              <h4 className="font-bold text-white text-sm">{ann.title}</h4>
+                              <span className="text-[10px] text-slate-400 mt-0.5 block">Audience: {ann.type} • Posted by {ann.createdBy}</span>
+                            </div>
+                            <button
+                              onClick={() => deleteAnnouncementMutation.mutate(ann.id)}
+                              className="text-red-400 hover:text-red-500 p-1.5 hover:bg-red-500/15 rounded-lg transition-all"
+                            >
+                              <Trash2 size={14} />
+                            </button>
+                          </div>
+                          <p className="text-slate-300 text-xs whitespace-pre-wrap leading-relaxed">{ann.message}</p>
+                          <span className="text-[10px] text-slate-500 mt-3.5 block">{new Date(ann.createdAt).toLocaleString()}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -444,6 +711,78 @@ export const AdminWorkspace = () => {
         </div>
       </main>
 
+      {/* ── COURSE REJECTION REASON DIALOG MODAL ── */}
+      {rejectingCourseId && (
+        <div className="fixed inset-0 z-50 bg-[#0b0f19]/80 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-[#111827] border border-slate-800 rounded-2xl w-full max-w-md p-6 space-y-4">
+            <h2 className="text-lg font-bold text-white">Reject Course Submission</h2>
+            <div className="space-y-1">
+              <label className="text-[10px] font-bold text-slate-400 block mb-1">Reason for Rejection</label>
+              <textarea
+                value={courseRejectReason}
+                onChange={(e) => setCourseRejectReason(e.target.value)}
+                className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white"
+                rows={4}
+                placeholder="Include feedback on why curriculum or details do not meet standards..."
+              />
+            </div>
+            <div className="flex justify-end gap-2 pt-2">
+              <button
+                onClick={() => setRejectingCourseId(null)}
+                className="px-4 py-2 bg-slate-800 hover:bg-slate-700 rounded-xl text-xs font-semibold text-slate-300"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  rejectCourseMutation.mutate({ courseId: rejectingCourseId, reason: courseRejectReason });
+                }}
+                className="px-4 py-2 bg-red-600 hover:bg-red-500 rounded-xl text-xs font-semibold text-white"
+              >
+                Reject Course
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── TRAINER REJECTION REASON DIALOG MODAL ── */}
+      {rejectingTrainerId && (
+        <div className="fixed inset-0 z-50 bg-[#0b0f19]/80 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-[#111827] border border-slate-800 rounded-2xl w-full max-w-md p-6 space-y-4">
+            <h2 className="text-lg font-bold text-white">Reject Instructor Profile Request</h2>
+            <div className="space-y-1">
+              <label className="text-[10px] font-bold text-slate-400 block mb-1">Feedback Reason</label>
+              <textarea
+                value={trainerRejectReason}
+                onChange={(e) => setTrainerRejectReason(e.target.value)}
+                className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white"
+                rows={4}
+                placeholder="Let trainer know why their application was rejected..."
+              />
+            </div>
+            <div className="flex justify-end gap-2 pt-2">
+              <button
+                onClick={() => setRejectingTrainerId(null)}
+                className="px-4 py-2 bg-slate-800 hover:bg-slate-700 rounded-xl text-xs font-semibold text-slate-300"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  rejectTrainerMutation.mutate({ trainerId: rejectingTrainerId, reason: trainerRejectReason });
+                }}
+                className="px-4 py-2 bg-red-600 hover:bg-red-500 rounded-xl text-xs font-semibold text-white"
+              >
+                Reject Request
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 };
+
+export default AdminWorkspace;

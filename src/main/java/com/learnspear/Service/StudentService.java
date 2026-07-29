@@ -326,7 +326,7 @@ public class StudentService {
 
         List<CourseSection> sections = courseSectionRepo.findByCourseOrderBySequenceAsc(course);
         List<CourseSectionDTO> sectionDTOs = sections.stream().map(sec -> {
-            List<LessonDTO> lessonDTOs = sec.getLessons().stream().map(l -> LessonDTO.builder()
+            List<LessonDto> lessonDTOs = sec.getLessons().stream().map(l -> LessonDto.builder()
                     .id(l.getId())
                     .title(l.getTitle())
                     .videoUrl(l.getIsPreview() ? l.getVideoUrl() : null)

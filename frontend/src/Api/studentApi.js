@@ -1,23 +1,33 @@
 import api from "./globalapi";
 
-// 1. Dashboard
+// ── Dashboard ──────────────────────────────────────────────────
 export const fetchDashboard = async () => {
   const res = await api.get("/student/dashboard");
   return res.data;
 };
 
-// 2. Profile
-export const fetchProfile = async () => {
-  const res = await api.get("/student/profile");
+// ── Enrolled Courses (My Courses) ──────────────────────────────
+export const fetchEnrolledCourses = async () => {
+  const res = await api.get("/student/enrollments");
   return res.data;
 };
 
-export const updateProfile = async (profileData) => {
-  const res = await api.put("/student/profile", profileData);
+// ── Explore ────────────────────────────────────────────────────
+export const exploreCourses = async ({ search, category, level } = {}) => {
+  const params = {};
+  if (search) params.search = search;
+  if (category && category !== "All") params.category = category;
+  if (level && level !== "All") params.level = level;
+  const res = await api.get("/student/explore", { params });
   return res.data;
 };
 
-// 3. Lesson Progress
+export const fetchCourseDetail = async (courseId) => {
+  const res = await api.get(`/student/explore/${courseId}`);
+  return res.data;
+};
+
+// ── Lesson Progress ────────────────────────────────────────────
 export const completeLesson = async ({ courseId, lessonId }) => {
   const res = await api.post(`/student/courses/${courseId}/lessons/${lessonId}/complete`);
   return res.data;
@@ -28,7 +38,56 @@ export const fetchCompletedLessons = async (courseId) => {
   return res.data;
 };
 
-// 4. Notes
+// ── Assignments ────────────────────────────────────────────────
+export const fetchStudentAssignments = async () => {
+  const res = await api.get("/student/assignments");
+  return res.data;
+};
+
+export const submitAssignment = async ({ assignmentId, submissionText, fileUrl }) => {
+  const res = await api.post(`/student/assignments/${assignmentId}/submit`, { submissionText, fileUrl });
+  return res.data;
+};
+
+export const fetchMyAssignmentSubmissions = async () => {
+  const res = await api.get("/student/assignments/my-submissions");
+  return res.data;
+};
+
+// ── Certificates ───────────────────────────────────────────────
+export const fetchCertificates = async () => {
+  const res = await api.get("/student/certificates");
+  return res.data;
+};
+
+// ── Reviews ────────────────────────────────────────────────────
+export const postCourseReview = async ({ courseId, rating, reviewText }) => {
+  const res = await api.post(`/student/courses/${courseId}/review`, { rating, reviewText });
+  return res.data;
+};
+
+export const fetchCourseReviews = async (courseId) => {
+  const res = await api.get(`/student/courses/${courseId}/reviews`);
+  return res.data;
+};
+
+// ── Wishlist ───────────────────────────────────────────────────
+export const addToWishlist = async (courseId) => {
+  const res = await api.post(`/student/wishlist/${courseId}`);
+  return res.data;
+};
+
+export const removeFromWishlist = async (courseId) => {
+  const res = await api.delete(`/student/wishlist/${courseId}`);
+  return res.data;
+};
+
+export const fetchWishlist = async () => {
+  const res = await api.get("/student/wishlist");
+  return res.data;
+};
+
+// ── Notes ──────────────────────────────────────────────────────
 export const fetchNotes = async (lessonId) => {
   const res = await api.get(`/student/lessons/${lessonId}/notes`);
   return res.data;
@@ -41,7 +100,7 @@ export const addNote = async ({ lessonId, note, timestamp }) => {
   return res.data;
 };
 
-// 5. Discussion
+// ── Discussions ────────────────────────────────────────────────
 export const fetchDiscussions = async (lessonId) => {
   const res = await api.get(`/student/lessons/${lessonId}/discussions`);
   return res.data;
@@ -54,7 +113,7 @@ export const addDiscussion = async ({ lessonId, message }) => {
   return res.data;
 };
 
-// 6. Roadmap
+// ── Roadmaps ───────────────────────────────────────────────────
 export const fetchRoadmaps = async () => {
   const res = await api.get("/student/roadmaps");
   return res.data;
@@ -70,7 +129,7 @@ export const fetchRoadmapProgress = async () => {
   return res.data;
 };
 
-// 7. Projects
+// ── Projects ───────────────────────────────────────────────────
 export const fetchProjects = async () => {
   const res = await api.get("/student/projects");
   return res.data;
@@ -78,9 +137,7 @@ export const fetchProjects = async () => {
 
 export const submitProject = async ({ projectId, githubUrl, liveDemo, notes }) => {
   const res = await api.post(`/student/projects/${projectId}/submit`, {
-    githubUrl,
-    liveDemo,
-    notes
+    githubUrl, liveDemo, notes
   });
   return res.data;
 };
@@ -90,7 +147,7 @@ export const fetchSubmissions = async () => {
   return res.data;
 };
 
-// 8. Mentors
+// ── Mentors ────────────────────────────────────────────────────
 export const fetchMentors = async () => {
   const res = await api.get("/student/mentors");
   return res.data;
@@ -101,7 +158,7 @@ export const requestMentorSession = async (sessionRequest) => {
   return res.data;
 };
 
-// 9. Notifications
+// ── Notifications ──────────────────────────────────────────────
 export const fetchNotifications = async () => {
   const res = await api.get("/student/notifications");
   return res.data;
@@ -112,7 +169,30 @@ export const markNotificationsRead = async () => {
   return res.data;
 };
 
-// 10. Quizzes / Assessments
+// ── Announcements ──────────────────────────────────────────────
+export const fetchAnnouncements = async () => {
+  const res = await api.get("/student/announcements");
+  return res.data;
+};
+
+// ── Profile ────────────────────────────────────────────────────
+export const fetchProfile = async () => {
+  const res = await api.get("/student/profile");
+  return res.data;
+};
+
+export const updateProfile = async (profileData) => {
+  const res = await api.put("/student/profile", profileData);
+  return res.data;
+};
+
+// ── Payments ───────────────────────────────────────────────────
+export const fetchBillingHistory = async () => {
+  const res = await api.get("/student/payments/history");
+  return res.data;
+};
+
+// ── Quizzes (kept for backward compat) ────────────────────────
 export const fetchCourseQuizzes = async (courseId) => {
   const res = await api.get(`/student/courses/${courseId}/quizzes`);
   return res.data;
@@ -133,7 +213,7 @@ export const fetchQuizProgress = async () => {
   return res.data;
 };
 
-// 11. Payments & Checkouts
+// ── Checkout ───────────────────────────────────────────────────
 export const validateCouponCode = async (code) => {
   const res = await api.get(`/student/coupons/validate?code=${code}`);
   return res.data;
@@ -141,10 +221,5 @@ export const validateCouponCode = async (code) => {
 
 export const checkoutCourse = async ({ courseId, couponCode }) => {
   const res = await api.post("/student/checkout", { courseId, couponCode });
-  return res.data;
-};
-
-export const fetchBillingHistory = async () => {
-  const res = await api.get("/student/payments/history");
   return res.data;
 };

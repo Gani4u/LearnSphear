@@ -11,5 +11,5 @@ public class CourseSectionDTO {
     private Long id;
     private String title;
     private Integer sequence;
-    private List<LessonDTO> lessons;
+    private List<LessonDto> lessons;
 }

@@ -6,15 +6,16 @@ import lombok.*;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class LessonDTO {
+public class LessonDto {
     private Long id;
     private String title;
+    private String content;
+    private Integer sequence;
     private String videoUrl;
     private String resourcesUrl;
     private Integer duration;
     private String lessonType;
     private Boolean isPreview;
-    private Integer sequence;
     private Long sectionId;
     private String description;
 }

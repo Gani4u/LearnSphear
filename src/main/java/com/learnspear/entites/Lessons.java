@@ -1,6 +1,7 @@
 package com.learnspear.entites;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -53,6 +54,6 @@ public class Lessons {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "section_id")
-    @JsonBackReference
+    @JsonIgnore
     private CourseSection section;
 }

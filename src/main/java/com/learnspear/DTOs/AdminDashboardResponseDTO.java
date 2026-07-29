@@ -17,6 +17,8 @@ public class AdminDashboardResponseDTO {
     private Long trainerCount;
     private Long pendingTrainersCount;
     private Long courseCount;
+    private Long totalEnrollments;
+    private Long totalCertificates;
     private List<Users> pendingTrainers;
     private List<Users> allUsers;
 }

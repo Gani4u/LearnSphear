@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/student")
@@ -19,27 +20,38 @@ public class StudentController {
 
     private final StudentService studentService;
 
-    // 1. Dashboard API
+    // ── Dashboard ────────────────────────────────────────────────
     @GetMapping("/dashboard")
     @PreAuthorize("hasRole('STUDENT')")
     public ResponseEntity<DashboardResponseDTO> getDashboardData(Principal principal) {
         return ResponseEntity.ok(studentService.getDashboardData(principal));
     }
 
-    // 2. Profile APIs
-    @GetMapping("/profile")
+    // ── Enrolled Courses (My Courses) ────────────────────────────
+    @GetMapping("/enrollments")
     @PreAuthorize("hasRole('STUDENT')")
-    public ResponseEntity<ProfileResponseDTO> getProfile(Principal principal) {
-        return ResponseEntity.ok(studentService.getProfile(principal));
+    public ResponseEntity<List<StudentEnrollmentDTO>> getEnrolledCourses(Principal principal) {
+        return ResponseEntity.ok(studentService.getEnrolledCourses(principal));
     }
 
-    @PutMapping("/profile")
+    // ── Explore Courses ───────────────────────────────────────────
+    @GetMapping("/explore")
     @PreAuthorize("hasRole('STUDENT')")
-    public ResponseEntity<ProfileResponseDTO> updateProfile(@RequestBody ProfileResponseDTO dto, Principal principal) {
-        return ResponseEntity.ok(studentService.updateProfile(dto, principal));
+    public ResponseEntity<List<CourseExploreDTO>> exploreCourses(
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) String category,
+            @RequestParam(required = false) String level,
+            Principal principal) {
+        return ResponseEntity.ok(studentService.exploreCourses(search, category, level, principal));
     }
 
-    // 3. Lesson Progress & Complete APIs
+    @GetMapping("/explore/{courseId}")
+    @PreAuthorize("hasRole('STUDENT')")
+    public ResponseEntity<CourseExploreDTO> getCourseDetail(@PathVariable Long courseId, Principal principal) {
+        return ResponseEntity.ok(studentService.getCourseDetail(courseId, principal));
+    }
+
+    // ── Lesson Progress ───────────────────────────────────────────
     @PostMapping("/courses/{courseId}/lessons/{lessonId}/complete")
     @PreAuthorize("hasRole('STUDENT')")
     public ResponseEntity<String> completeLesson(@PathVariable Long courseId, @PathVariable Long lessonId, Principal principal) {
@@ -52,7 +64,74 @@ public class StudentController {
         return ResponseEntity.ok(studentService.getCompletedLessonIds(courseId, principal));
     }
 
-    // 4. Notes APIs
+    // ── Assignments ───────────────────────────────────────────────
+    @GetMapping("/assignments")
+    @PreAuthorize("hasRole('STUDENT')")
+    public ResponseEntity<List<AssignmentDTO>> getAssignments(Principal principal) {
+        return ResponseEntity.ok(studentService.getStudentAssignments(principal));
+    }
+
+    @PostMapping("/assignments/{assignmentId}/submit")
+    @PreAuthorize("hasRole('STUDENT')")
+    public ResponseEntity<AssignmentSubmission> submitAssignment(
+            @PathVariable Long assignmentId,
+            @RequestBody Map<String, String> body,
+            Principal principal) {
+        return ResponseEntity.ok(studentService.submitAssignment(
+                assignmentId, body.get("submissionText"), body.get("fileUrl"), principal));
+    }
+
+    @GetMapping("/assignments/my-submissions")
+    @PreAuthorize("hasRole('STUDENT')")
+    public ResponseEntity<List<AssignmentSubmission>> getMySubmissions(Principal principal) {
+        return ResponseEntity.ok(studentService.getMyAssignmentSubmissions(principal));
+    }
+
+    // ── Certificates ──────────────────────────────────────────────
+    @GetMapping("/certificates")
+    @PreAuthorize("hasRole('STUDENT')")
+    public ResponseEntity<List<CertificateDTO>> getCertificates(Principal principal) {
+        return ResponseEntity.ok(studentService.getCertificates(principal));
+    }
+
+    // ── Reviews ───────────────────────────────────────────────────
+    @PostMapping("/courses/{courseId}/review")
+    @PreAuthorize("hasRole('STUDENT')")
+    public ResponseEntity<CourseReview> postReview(
+            @PathVariable Long courseId,
+            @RequestBody Map<String, Object> body,
+            Principal principal) {
+        Integer rating = (Integer) body.get("rating");
+        String text = (String) body.get("reviewText");
+        return ResponseEntity.ok(studentService.postReview(courseId, rating, text, principal));
+    }
+
+    @GetMapping("/courses/{courseId}/reviews")
+    @PreAuthorize("hasRole('STUDENT')")
+    public ResponseEntity<List<CourseReviewDTO>> getCourseReviews(@PathVariable Long courseId) {
+        return ResponseEntity.ok(studentService.getCourseReviews(courseId));
+    }
+
+    // ── Wishlist ──────────────────────────────────────────────────
+    @PostMapping("/wishlist/{courseId}")
+    @PreAuthorize("hasRole('STUDENT')")
+    public ResponseEntity<String> addToWishlist(@PathVariable Long courseId, Principal principal) {
+        return ResponseEntity.ok(studentService.addToWishlist(courseId, principal));
+    }
+
+    @DeleteMapping("/wishlist/{courseId}")
+    @PreAuthorize("hasRole('STUDENT')")
+    public ResponseEntity<String> removeFromWishlist(@PathVariable Long courseId, Principal principal) {
+        return ResponseEntity.ok(studentService.removeFromWishlist(courseId, principal));
+    }
+
+    @GetMapping("/wishlist")
+    @PreAuthorize("hasRole('STUDENT')")
+    public ResponseEntity<List<CourseExploreDTO>> getWishlist(Principal principal) {
+        return ResponseEntity.ok(studentService.getWishlist(principal));
+    }
+
+    // ── Notes ─────────────────────────────────────────────────────
     @GetMapping("/lessons/{lessonId}/notes")
     @PreAuthorize("hasRole('STUDENT')")
     public ResponseEntity<List<LessonNotes>> getNotes(@PathVariable Long lessonId, Principal principal) {
@@ -61,11 +140,12 @@ public class StudentController {
 
     @PostMapping("/lessons/{lessonId}/notes")
     @PreAuthorize("hasRole('STUDENT')")
-    public ResponseEntity<LessonNotes> addNote(@PathVariable Long lessonId, @RequestParam String note, @RequestParam Integer timestamp, Principal principal) {
+    public ResponseEntity<LessonNotes> addNote(@PathVariable Long lessonId,
+            @RequestParam String note, @RequestParam Integer timestamp, Principal principal) {
         return ResponseEntity.ok(studentService.addNote(lessonId, note, timestamp, principal));
     }
 
-    // 5. Discussion APIs
+    // ── Discussions ───────────────────────────────────────────────
     @GetMapping("/lessons/{lessonId}/discussions")
     @PreAuthorize("hasRole('STUDENT')")
     public ResponseEntity<List<Discussion>> getDiscussions(@PathVariable Long lessonId) {
@@ -74,11 +154,12 @@ public class StudentController {
 
     @PostMapping("/lessons/{lessonId}/discussions")
     @PreAuthorize("hasRole('STUDENT')")
-    public ResponseEntity<Discussion> addDiscussion(@PathVariable Long lessonId, @RequestParam String message, Principal principal) {
+    public ResponseEntity<Discussion> addDiscussion(@PathVariable Long lessonId,
+            @RequestParam String message, Principal principal) {
         return ResponseEntity.ok(studentService.addDiscussion(lessonId, message, principal));
     }
 
-    // 6. Roadmap APIs
+    // ── Roadmaps ──────────────────────────────────────────────────
     @GetMapping("/roadmaps")
     @PreAuthorize("hasRole('STUDENT')")
     public ResponseEntity<List<Roadmap>> getRoadmaps() {
@@ -93,30 +174,32 @@ public class StudentController {
 
     @GetMapping("/roadmaps/progress")
     @PreAuthorize("hasRole('STUDENT')")
-    public ResponseEntity<List<StudentRoadmapProgress>> getStudentRoadmapProgress(Principal principal) {
+    public ResponseEntity<List<StudentRoadmapProgress>> getRoadmapProgress(Principal principal) {
         return ResponseEntity.ok(studentService.getStudentRoadmapProgress(principal));
     }
 
-    // 7. Projects APIs
+    // ── Projects ──────────────────────────────────────────────────
     @GetMapping("/projects")
     @PreAuthorize("hasRole('STUDENT')")
-    public ResponseEntity<List<Project>> getProjectsForStudent(Principal principal) {
+    public ResponseEntity<List<Project>> getProjects(Principal principal) {
         return ResponseEntity.ok(studentService.getProjectsForStudent(principal));
     }
 
     @PostMapping("/projects/{projectId}/submit")
     @PreAuthorize("hasRole('STUDENT')")
-    public ResponseEntity<ProjectSubmission> submitProject(@PathVariable Long projectId, @RequestBody ProjectSubmissionRequest req, Principal principal) {
+    public ResponseEntity<ProjectSubmission> submitProject(
+            @PathVariable Long projectId,
+            @RequestBody ProjectSubmissionRequest req, Principal principal) {
         return ResponseEntity.ok(studentService.submitProject(projectId, req, principal));
     }
 
     @GetMapping("/projects/submissions")
     @PreAuthorize("hasRole('STUDENT')")
-    public ResponseEntity<List<ProjectSubmission>> getSubmissions(Principal principal) {
+    public ResponseEntity<List<ProjectSubmission>> getProjectSubmissions(Principal principal) {
         return ResponseEntity.ok(studentService.getSubmissions(principal));
     }
 
-    // 8. Mentors & Booking APIs
+    // ── Mentors ───────────────────────────────────────────────────
     @GetMapping("/mentors")
     @PreAuthorize("hasRole('STUDENT')")
     public ResponseEntity<List<Users>> getMentors(Principal principal) {
@@ -129,7 +212,7 @@ public class StudentController {
         return ResponseEntity.ok(studentService.requestSession(req, principal));
     }
 
-    // 9. Notifications APIs
+    // ── Notifications ─────────────────────────────────────────────
     @GetMapping("/notifications")
     @PreAuthorize("hasRole('STUDENT')")
     public ResponseEntity<List<Notification>> getNotifications(Principal principal) {
@@ -140,5 +223,26 @@ public class StudentController {
     @PreAuthorize("hasRole('STUDENT')")
     public ResponseEntity<String> markNotificationsRead(Principal principal) {
         return ResponseEntity.ok(studentService.markNotificationsRead(principal));
+    }
+
+    // ── Announcements ─────────────────────────────────────────────
+    @GetMapping("/announcements")
+    @PreAuthorize("hasRole('STUDENT')")
+    public ResponseEntity<List<AnnouncementDTO>> getAnnouncements() {
+        return ResponseEntity.ok(studentService.getAnnouncements());
+    }
+
+
+    // ── Profile ───────────────────────────────────────────────────
+    @GetMapping("/profile")
+    @PreAuthorize("hasRole('STUDENT')")
+    public ResponseEntity<ProfileResponseDTO> getProfile(Principal principal) {
+        return ResponseEntity.ok(studentService.getProfile(principal));
+    }
+
+    @PutMapping("/profile")
+    @PreAuthorize("hasRole('STUDENT')")
+    public ResponseEntity<ProfileResponseDTO> updateProfile(@RequestBody ProfileResponseDTO dto, Principal principal) {
+        return ResponseEntity.ok(studentService.updateProfile(dto, principal));
     }
 }

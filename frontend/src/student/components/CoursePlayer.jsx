@@ -12,10 +12,11 @@ import {
   Download,
   Send,
   Loader2,
-  Clock
+  Clock,
+  ExternalLink
 } from "lucide-react";
-import { fetchCourseDetails } from "../../Api/fetchCourseDetails";
 import {
+  fetchCourseDetail,
   completeLesson,
   fetchNotes,
   addNote,
@@ -38,7 +39,7 @@ export const CoursePlayer = () => {
   // Queries
   const { data: course, isLoading, isError, error } = useQuery({
     queryKey: ["courseDetail", courseId],
-    queryFn: () => fetchCourseDetails(courseId),
+    queryFn: () => fetchCourseDetail(courseId),
     enabled: !!courseId,
   });
 
@@ -48,7 +49,18 @@ export const CoursePlayer = () => {
     enabled: !!courseId,
   });
 
-  // Fetch Notes and Discussions dynamically when active lesson changes
+  // Flattened lessons helper
+  const allLessons = course?.sections
+    ? course.sections.flatMap(sec => 
+        (sec.lessons || []).map(l => ({ ...l, sectionTitle: sec.title }))
+      ).sort((a, b) => a.sequence - b.sequence)
+    : [];
+
+  // Set first lesson as active once loaded
+  if (allLessons.length > 0 && !activeLesson) {
+    setActiveLesson(allLessons[0]);
+  }
+
   const activeLessonId = activeLesson?.id;
 
   const { data: notes, refetch: refetchNotes } = useQuery({
@@ -62,12 +74,6 @@ export const CoursePlayer = () => {
     queryFn: () => fetchDiscussions(activeLessonId),
     enabled: !!activeLessonId,
   });
-
-  // Set first lesson as active once loaded
-  if (course?.lessons?.length > 0 && !activeLesson) {
-    const sorted = [...course.lessons].sort((a, b) => a.sequence - b.sequence);
-    setActiveLesson(sorted[0]);
-  }
 
   // Mutations
   const completeMutation = useMutation({
@@ -120,27 +126,25 @@ export const CoursePlayer = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50">
-        <Loader2 className="animate-spin text-blue-600" size={36} />
+      <div className="min-h-screen flex items-center justify-center bg-slate-900">
+        <Loader2 className="animate-spin text-indigo-500" size={36} />
       </div>
     );
   }
 
   if (isError) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50">
+      <div className="min-h-screen flex items-center justify-center bg-slate-900 text-white">
         <p className="text-red-500 font-bold">Error loading classroom: {error.message}</p>
       </div>
     );
   }
 
-  const sortedLessons = course?.lessons ? [...course.lessons].sort((a, b) => a.sequence - b.sequence) : [];
-
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col font-sans">
+    <div className="min-h-screen bg-[#0b0f19] flex flex-col font-sans text-slate-200">
       
       {/* HEADER BANNER */}
-      <header className="bg-slate-900 text-white px-6 py-4 flex items-center justify-between shadow-md">
+      <header className="bg-[#111827] border-b border-slate-800 px-6 py-4 flex items-center justify-between shadow-md">
         <div className="flex items-center gap-3">
           <button
             onClick={() => navigate(-1)}
@@ -149,8 +153,8 @@ export const CoursePlayer = () => {
             <ChevronLeft size={18} />
           </button>
           <div className="text-left">
-            <span className="text-[10px] font-bold text-blue-400 uppercase tracking-widest block">Classroom Player</span>
-            <h1 className="text-base font-extrabold tracking-tight">{course.title}</h1>
+            <span className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest block">Classroom Player</span>
+            <h1 className="text-base font-extrabold tracking-tight text-white">{course.title}</h1>
           </div>
         </div>
 
@@ -169,13 +173,13 @@ export const CoursePlayer = () => {
           <div className="aspect-video w-full max-w-4xl mx-auto rounded-3xl bg-black border border-slate-800 shadow-lg relative overflow-hidden flex items-center justify-center group">
             {activeLesson?.videoUrl ? (
               <video
-                src={`http://localhost:8080/videos/${activeLesson.videoUrl}`}
+                src={activeLesson.videoUrl.startsWith('http') ? activeLesson.videoUrl : `http://localhost:8080/videos/${activeLesson.videoUrl}`}
                 controls
                 className="w-full h-full object-cover"
               />
             ) : (
               <div className="text-center p-8 space-y-3">
-                <Play size={48} className="text-blue-500 mx-auto fill-blue-500 animate-pulse" />
+                <Play size={48} className="text-indigo-500 mx-auto fill-indigo-500 animate-pulse" />
                 <div>
                   <h4 className="text-white font-bold text-lg">{activeLesson?.title || "Welcome to Classroom"}</h4>
                   <p className="text-xs text-slate-400">Mocking educational playback screen</p>
@@ -184,28 +188,30 @@ export const CoursePlayer = () => {
             )}
             
             {/* Float Mark Complete on top right of video player */}
-            <div className="absolute top-4 right-4 z-10">
-              <button
-                onClick={handleMarkComplete}
-                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl shadow flex items-center gap-1.5"
-              >
-                <CheckCircle2 size={14} />
-                <span>Mark Lesson Complete</span>
-              </button>
-            </div>
+            {activeLesson && (
+              <div className="absolute top-4 right-4 z-10">
+                <button
+                  onClick={handleMarkComplete}
+                  className="px-4 py-2 bg-indigo-600 hover:bg-indigo-750 text-white font-bold text-xs rounded-xl shadow flex items-center gap-1.5"
+                >
+                  <CheckCircle2 size={14} />
+                  <span>Mark Lesson Complete</span>
+                </button>
+              </div>
+            )}
           </div>
 
           {/* Classroom Tabs */}
           <div className="w-full max-w-4xl mx-auto space-y-6">
-            <div className="flex gap-1 border-b border-slate-200 pb-2 overflow-x-auto">
+            <div className="flex gap-1 border-b border-slate-800 pb-2 overflow-x-auto">
               {["overview", "lesson", "notes", "resources", "discussion"].map((tab) => (
                 <button
                   key={tab}
                   onClick={() => setActiveTab(tab)}
                   className={`px-4.5 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all whitespace-nowrap ${
                     activeTab === tab
-                      ? "bg-slate-900 text-white"
-                      : "text-slate-500 hover:bg-slate-100 hover:text-slate-800"
+                      ? "bg-[#111827] text-white border border-slate-700"
+                      : "text-slate-400 hover:bg-slate-800/50 hover:text-slate-200"
                   }`}
                 >
                   {tab}
@@ -214,25 +220,22 @@ export const CoursePlayer = () => {
             </div>
 
             {/* Tab Contents */}
-            <div className="bg-white p-6 rounded-3xl border border-slate-200/80 shadow-sm text-left">
+            <div className="bg-[#111827] p-6 rounded-3xl border border-slate-800/80 shadow-sm text-left">
               
               {activeTab === "overview" && (
                 <div className="space-y-4">
-                  <h3 className="font-extrabold text-slate-800 text-lg">Course Overview</h3>
-                  <p className="text-sm text-slate-500 leading-relaxed">{course.description}</p>
+                  <h3 className="font-extrabold text-white text-lg">Course Overview</h3>
+                  <p className="text-sm text-slate-400 leading-relaxed">{course.description}</p>
                 </div>
               )}
 
               {activeTab === "lesson" && (
                 <div className="space-y-4">
-                  <h3 className="font-extrabold text-slate-800 text-lg flex items-center gap-2">
-                    <span className="w-6 h-6 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center font-extrabold text-xs">
-                      {activeLesson?.sequence}
-                    </span>
+                  <h3 className="font-extrabold text-white text-lg flex items-center gap-2">
                     <span>{activeLesson?.title}</span>
                   </h3>
-                  <p className="text-sm text-slate-500 leading-relaxed whitespace-pre-line">
-                    {activeLesson?.content || "No lecture notes written for this lesson yet."}
+                  <p className="text-sm text-slate-400 leading-relaxed whitespace-pre-line">
+                    {activeLesson?.description || "No lecture notes written for this lesson yet."}
                   </p>
                 </div>
               )}
@@ -240,8 +243,8 @@ export const CoursePlayer = () => {
               {activeTab === "notes" && (
                 <div className="space-y-6">
                   <div className="flex justify-between items-center">
-                    <h3 className="font-extrabold text-slate-800 text-base">Personal Lecture Notes</h3>
-                    <span className="text-[10px] text-slate-400 uppercase tracking-widest font-bold">Auto-synced</span>
+                    <h3 className="font-extrabold text-white text-base">Personal Lecture Notes</h3>
+                    <span className="text-[10px] text-slate-500 uppercase tracking-widest font-bold">Auto-synced</span>
                   </div>
 
                   <form onSubmit={handleAddNote} className="flex gap-2">
@@ -250,25 +253,25 @@ export const CoursePlayer = () => {
                       placeholder="Type a note matching this timestamp..."
                       value={noteText}
                       onChange={(e) => setNoteText(e.target.value)}
-                      className="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500/10"
+                      className="flex-1 bg-slate-900 border border-slate-750 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/10"
                     />
-                    <button type="submit" className="px-4 py-2 bg-slate-900 text-white rounded-xl text-xs font-bold hover:bg-slate-800">
+                    <button type="submit" className="px-4 py-2 bg-indigo-600 text-white rounded-xl text-xs font-bold hover:bg-indigo-500">
                       Save
                     </button>
                   </form>
 
                   <div className="space-y-3">
                     {notes?.map((n) => (
-                      <div key={n.id} className="p-3 bg-slate-50 border border-slate-100 rounded-xl flex items-start gap-3">
-                        <Bookmark size={14} className="text-blue-500 mt-0.5 shrink-0" />
+                      <div key={n.id} className="p-3 bg-slate-900/50 border border-slate-800 rounded-xl flex items-start gap-3">
+                        <Bookmark size={14} className="text-indigo-400 mt-0.5 shrink-0" />
                         <div className="space-y-0.5">
-                          <p className="text-xs text-slate-700 font-medium">{n.note}</p>
-                          <span className="text-[9px] text-slate-400 font-bold uppercase tracking-wider block">Timestamp: {n.videoTimestamp}s</span>
+                          <p className="text-xs text-slate-300 font-medium">{n.note}</p>
+                          <span className="text-[9px] text-slate-500 font-bold uppercase tracking-wider block">Timestamp: {n.videoTimestamp}s</span>
                         </div>
                       </div>
                     ))}
                     {(!notes || notes.length === 0) && (
-                      <p className="text-xs text-slate-400 text-center py-4">No notes saved for this lesson yet.</p>
+                      <p className="text-xs text-slate-500 text-center py-4">No notes saved for this lesson yet.</p>
                     )}
                   </div>
                 </div>
@@ -276,27 +279,34 @@ export const CoursePlayer = () => {
 
               {activeTab === "resources" && (
                 <div className="space-y-4">
-                  <h3 className="font-extrabold text-slate-800 text-base">Lesson Materials</h3>
-                  <div className="divide-y divide-slate-100">
-                    <div className="py-3 flex justify-between items-center">
+                  <h3 className="font-extrabold text-white text-base">Lesson Materials</h3>
+                  {activeLesson?.resourcesUrl ? (
+                    <div className="py-3 flex justify-between items-center bg-slate-900/50 border border-slate-800 rounded-xl px-4">
                       <div className="flex items-center gap-2.5">
                         <FileText className="text-slate-400" size={18} />
                         <div>
-                          <h4 className="text-xs font-bold text-slate-800">Cheat Sheet & Source Code</h4>
-                          <span className="text-[10px] text-slate-400 uppercase tracking-widest font-semibold block">ZIP Code</span>
+                          <h4 className="text-xs font-bold text-slate-200">Resources Attachment Link</h4>
+                          <span className="text-[10px] text-slate-500 uppercase tracking-widest font-semibold block">External File</span>
                         </div>
                       </div>
-                      <button className="p-2 bg-slate-50 hover:bg-slate-100 rounded-lg text-slate-500 transition-colors">
-                        <Download size={14} />
-                      </button>
+                      <a
+                        href={activeLesson.resourcesUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="p-2 bg-slate-800 hover:bg-slate-700 rounded-lg text-indigo-400 transition-colors"
+                      >
+                        <ExternalLink size={14} />
+                      </a>
                     </div>
-                  </div>
+                  ) : (
+                    <p className="text-xs text-slate-500 py-4">No resources attachments for this lesson.</p>
+                  )}
                 </div>
               )}
 
               {activeTab === "discussion" && (
                 <div className="space-y-6">
-                  <h3 className="font-extrabold text-slate-800 text-base">Classroom Forum</h3>
+                  <h3 className="font-extrabold text-white text-base">Classroom Forum</h3>
                   
                   <form onSubmit={handleAddDiscussion} className="flex gap-2">
                     <input
@@ -304,9 +314,9 @@ export const CoursePlayer = () => {
                       placeholder="Ask a question or discuss this lesson..."
                       value={discussionText}
                       onChange={(e) => setDiscussionText(e.target.value)}
-                      className="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs focus:outline-none"
+                      className="flex-1 bg-slate-900 border border-slate-750 rounded-xl px-3 py-2 text-xs text-white focus:outline-none"
                     />
-                    <button type="submit" className="p-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl">
+                    <button type="submit" className="p-2 bg-indigo-650 hover:bg-indigo-600 text-white rounded-xl">
                       <Send size={14} />
                     </button>
                   </form>
@@ -314,20 +324,20 @@ export const CoursePlayer = () => {
                   <div className="space-y-4 max-h-60 overflow-y-auto pr-2">
                     {discussions?.map((disc) => (
                       <div key={disc.id} className="flex gap-3 text-left">
-                        <div className="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center font-bold text-xs text-slate-600 shrink-0">
+                        <div className="w-8 h-8 rounded-lg bg-slate-850 border border-slate-850 flex items-center justify-center font-bold text-xs text-slate-300 shrink-0">
                           {disc.student?.username?.slice(0, 2).toUpperCase()}
                         </div>
                         <div className="space-y-1">
                           <div className="flex items-center gap-2">
-                            <span className="text-xs font-bold text-slate-700">{disc.student?.username}</span>
-                            <span className="text-[9px] text-slate-400">{new Date(disc.createdAt).toLocaleTimeString()}</span>
+                            <span className="text-xs font-bold text-slate-200">{disc.student?.username}</span>
+                            <span className="text-[9px] text-slate-500">{new Date(disc.createdAt).toLocaleTimeString()}</span>
                           </div>
-                          <p className="text-xs text-slate-500 leading-normal">{disc.message}</p>
+                          <p className="text-xs text-slate-400 leading-normal">{disc.message}</p>
                         </div>
                       </div>
                     ))}
                     {(!discussions || discussions.length === 0) && (
-                      <p className="text-xs text-slate-400 text-center py-4">Be the first to post a discussion message!</p>
+                      <p className="text-xs text-slate-500 text-center py-4">Be the first to post a discussion message!</p>
                     )}
                   </div>
                 </div>
@@ -337,49 +347,58 @@ export const CoursePlayer = () => {
         </main>
 
         {/* Right Side: Chapter & Lessons Sidebar */}
-        <aside className="w-full lg:w-80 border-t lg:border-t-0 lg:border-l border-slate-200 bg-white p-6 flex flex-col gap-6 shrink-0 text-left overflow-y-auto">
+        <aside className="w-full lg:w-80 border-t lg:border-t-0 lg:border-l border-slate-800 bg-[#111827] p-6 flex flex-col gap-6 shrink-0 text-left overflow-y-auto">
           <div className="space-y-1">
-            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block">Course Content</span>
-            <h3 className="font-extrabold text-slate-800 text-base">Chapters & Lessons</h3>
+            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest block">Course Content</span>
+            <h3 className="font-extrabold text-white text-base">Chapters & Lessons</h3>
           </div>
 
-          <div className="flex flex-col gap-2">
-            {sortedLessons.map((lesson) => {
-              const isActive = activeLesson?.id === lesson.id;
-              const isCompleted = completedLessons?.includes(lesson.id);
-              return (
-                <div
-                  key={lesson.id}
-                  onClick={() => setActiveLesson(lesson)}
-                  className={`p-3.5 rounded-2xl border cursor-pointer transition-all flex items-center justify-between gap-3 ${
-                    isActive
-                      ? "border-blue-500 bg-blue-50/20 shadow-sm"
-                      : "border-slate-100 bg-slate-50/40 hover:border-slate-200"
-                  }`}
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="shrink-0">
-                      {isCompleted ? (
-                        <CheckCircle2 size={14} className="text-emerald-500 fill-emerald-50" />
-                      ) : isActive ? (
-                        <Play size={14} className="text-blue-600 fill-blue-600" />
-                      ) : (
-                        <Circle size={14} className="text-slate-400" />
-                      )}
-                    </div>
-                    <div className="space-y-0.5">
-                      <h4 className={`text-xs font-bold ${isActive ? 'text-blue-900' : 'text-slate-700'}`}>
-                        {lesson.sequence}. {lesson.title}
-                      </h4>
-                      <span className="text-[9px] text-slate-400 flex items-center gap-1">
-                        <Clock size={10} />
-                        <span>{lesson.duration || 10} Mins</span>
-                      </span>
-                    </div>
-                  </div>
+          <div className="space-y-4">
+            {course?.sections?.map((section) => (
+              <div key={section.id} className="space-y-2">
+                <h4 className="text-xs font-extrabold text-slate-400 uppercase tracking-wider px-1">
+                  {section.title}
+                </h4>
+                <div className="flex flex-col gap-1.5">
+                  {(section.lessons || []).map((lesson) => {
+                    const isActive = activeLesson?.id === lesson.id;
+                    const isCompleted = completedLessons?.includes(lesson.id);
+                    return (
+                      <div
+                        key={lesson.id}
+                        onClick={() => setActiveLesson({ ...lesson, sectionTitle: section.title })}
+                        className={`p-3 rounded-xl border cursor-pointer transition-all flex items-center justify-between gap-3 ${
+                          isActive
+                            ? "border-indigo-500 bg-indigo-500/5 shadow-sm"
+                            : "border-slate-800 bg-slate-900/40 hover:border-slate-700"
+                        }`}
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className="shrink-0">
+                            {isCompleted ? (
+                              <CheckCircle2 size={13} className="text-emerald-500 fill-emerald-50" />
+                            ) : isActive ? (
+                              <Play size={13} className="text-indigo-500 fill-indigo-500" />
+                            ) : (
+                              <Circle size={13} className="text-slate-650" />
+                            )}
+                          </div>
+                          <div className="space-y-0.5">
+                            <h5 className={`text-xs font-bold ${isActive ? 'text-indigo-400' : 'text-slate-300'}`}>
+                              {lesson.title}
+                            </h5>
+                            <span className="text-[9px] text-slate-500 flex items-center gap-1">
+                              <Clock size={10} />
+                              <span>{lesson.duration || 10} Mins</span>
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
-              );
-            })}
+              </div>
+            ))}
           </div>
         </aside>
       </div>

@@ -1,10 +1,9 @@
 import React, { useState } from "react";
-import { FetchAllCourse } from "../../Api/FetchAllCourse";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "react-toastify";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import { checkoutCourse, validateCouponCode } from "../../Api/studentApi";
+import { checkoutCourse, validateCouponCode, exploreCourses } from "../../Api/studentApi";
 import { CreditCard, Ticket, Search, Layers, Award, Sparkles, ChevronRight } from "lucide-react";
 
 const StudentHome = () => {
@@ -31,8 +30,8 @@ const StudentHome = () => {
   const [cardCvv, setCardCvv] = useState("");
 
   const { data: courses, isLoading, isError, error } = useQuery({
-    queryKey: ["courses"],
-    queryFn: FetchAllCourse,
+    queryKey: ["courses", searchQuery, activeCategory],
+    queryFn: () => exploreCourses({ search: searchQuery, category: activeCategory }),
   });
 
   const validateCouponMutation = useMutation({
@@ -107,13 +106,7 @@ const StudentHome = () => {
   };
 
   // Filter courses
-  const filteredCourses = courses?.filter((course) => {
-    const matchesSearch =
-      course.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      course.description?.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCategory = activeCategory === "All" || course.category === activeCategory;
-    return matchesSearch && matchesCategory;
-  }) || [];
+  const filteredCourses = courses || [];
 
   const currentCourse = courses?.find(c => c.id === selectedCourseId);
   const basePrice = currentCourse?.price != null ? currentCourse.price : 99.0;

@@ -54,9 +54,4 @@ public class CourseController {
         return ResponseEntity.ok(courses);
     }
 
-    @GetMapping("/{courseId}/students")
-    @PreAuthorize("hasRole('TRAINER')")
-    public ResponseEntity<?> getStudentsInCourse(@PathVariable Long courseId, Principal principal) {
-        return ResponseEntity.ok(courseService.getStudentsForCourse(courseId, principal));
-    }
 }
