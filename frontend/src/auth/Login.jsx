@@ -21,7 +21,13 @@ export const Login = ({ onSuccess, onSwitch }) => {
       onSuccess: (data) => {
         dispatch(loginSuccess(data));
         onSuccess?.();
-        navigate(data.user.role === "STUDENT" ? "/mylearning" : "/myclass");
+        if (data.user.role === "ADMIN") {
+          navigate("/admin");
+        } else if (data.user.role === "STUDENT") {
+          navigate("/mylearning");
+        } else {
+          navigate("/myclass");
+        }
       },
     });
   };

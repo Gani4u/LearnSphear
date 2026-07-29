@@ -9,4 +9,7 @@ import java.util.Optional;
 @Repository
 public interface UserRepo extends JpaRepository<Users, Long> {
     Optional<Users> findByUsername(String username);
+    long countByRole(com.learnspear.Enums.Role role);
+    java.util.List<Users> findByRole(com.learnspear.Enums.Role role);
+    java.util.List<Users> findByRoleAndApproved(com.learnspear.Enums.Role role, Boolean approved);
 }

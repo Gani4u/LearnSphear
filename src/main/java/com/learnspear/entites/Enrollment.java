@@ -32,4 +32,21 @@ public class Enrollment {
 
     @Column(name = "enrollment_date", nullable = false)
     private LocalDateTime enrollmentDate;
+
+    @Column(name = "progress_percentage")
+    @Builder.Default
+    private Integer progressPercentage = 0;
+
+    @Builder.Default
+    private Boolean completed = false;
+
+    @Column(name = "certificate_generated")
+    @Builder.Default
+    private Boolean certificateGenerated = false;
+
+    @Column(name = "completed_at")
+    private LocalDateTime completedAt;
+
+    @Column(name = "last_accessed_at")
+    private LocalDateTime lastAccessedAt;
 }

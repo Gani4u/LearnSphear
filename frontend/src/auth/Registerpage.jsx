@@ -2,9 +2,17 @@ import { useState } from "react";
 import { useRegister } from "../Api/UserRegister";
 import { Button } from "../components/ui/button";
 import { User, Mail, Lock, GraduationCap, Presentation, ArrowRight, Check } from "lucide-react";
+import { useDispatch } from "react-redux";
+import { useNavigate } from "react-router-dom";
+import { useLogin } from "../Api/useLogin";
+import { loginSuccess } from "../store/AuthSlice";
 
 export const Registerpage = ({ onSuccess, onSwitch }) => {
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
   const { mutate, isPending, error } = useRegister();
+  const loginMutation = useLogin();
+
   const [formData, setFormData] = useState({
     username: "",
     email: "",
@@ -32,7 +40,23 @@ export const Registerpage = ({ onSuccess, onSwitch }) => {
       alert("Please select a role to register.");
       return;
     }
-    mutate(formData, { onSuccess });
+    mutate(formData, {
+      onSuccess: () => {
+        loginMutation.mutate({ username: formData.username, password: formData.password }, {
+          onSuccess: (data) => {
+            dispatch(loginSuccess(data));
+            onSuccess?.();
+            if (data.user.role === "ADMIN") {
+              navigate("/admin");
+            } else if (data.user.role === "STUDENT") {
+              navigate("/mylearning");
+            } else {
+              navigate("/myclass");
+            }
+          }
+        });
+      }
+    });
   };
 
   return (
@@ -188,10 +212,10 @@ export const Registerpage = ({ onSuccess, onSwitch }) => {
       {/* Submit Button */}
       <Button
         type="submit"
-        disabled={isPending}
+        disabled={isPending || loginMutation.isPending}
         className="w-full py-3 mt-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-xl font-semibold shadow-md shadow-blue-500/10 hover:shadow-lg hover:shadow-blue-500/20 transition-all duration-200 flex items-center justify-center gap-2 group"
       >
-        {isPending ? (
+        {isPending || loginMutation.isPending ? (
           <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
         ) : (
           <>
