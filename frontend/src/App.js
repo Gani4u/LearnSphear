@@ -40,20 +40,21 @@ function App() {
           }
         />
 
+        <Route
+          path="myclass"
+          element={
+            <Rolebaseroute roleallowed={["TRAINER"]}>
+              <Mycourse />
+            </Rolebaseroute>
+          }
+        />
+
         <Route element={<Topbar />}>
           <Route
             path="home"
             element={
               <Rolebaseroute roleallowed={["STUDENT", "TRAINER"]}>
                 <Home />
-              </Rolebaseroute>
-            }
-          />
-          <Route
-            path="myclass"
-            element={
-              <Rolebaseroute roleallowed="TRAINER">
-                <Mycourse />
               </Rolebaseroute>
             }
           />

@@ -106,3 +106,24 @@ export const markNotificationsRead = async () => {
   const res = await api.put("/student/notifications/read");
   return res.data;
 };
+
+// 10. Quizzes / Assessments
+export const fetchCourseQuizzes = async (courseId) => {
+  const res = await api.get(`/student/courses/${courseId}/quizzes`);
+  return res.data;
+};
+
+export const fetchQuizQuestions = async (quizId) => {
+  const res = await api.get(`/student/quizzes/${quizId}/questions`);
+  return res.data;
+};
+
+export const submitQuizAnswers = async ({ quizId, answers }) => {
+  const res = await api.post(`/student/quizzes/${quizId}/submit`, answers);
+  return res.data;
+};
+
+export const fetchQuizProgress = async () => {
+  const res = await api.get("/student/quizzes/progress");
+  return res.data;
+};

@@ -22,7 +22,8 @@ import {
   Clock,
   GitBranch,
   Play,
-  Sparkles
+  Sparkles,
+  ClipboardList
 } from "lucide-react";
 import {
   fetchDashboard,
@@ -37,7 +38,11 @@ import {
   fetchMentors,
   requestMentorSession,
   fetchNotifications,
-  markNotificationsRead
+  markNotificationsRead,
+  fetchCourseQuizzes,
+  fetchQuizQuestions,
+  submitQuizAnswers,
+  fetchQuizProgress
 } from "../Api/studentApi";
 
 export const Mylearning = () => {
@@ -47,6 +52,11 @@ export const Mylearning = () => {
 
   const [activeTab, setActiveTab] = useState("dashboard");
   const [searchQuery, setSearchQuery] = useState("");
+
+  // Quiz / Assessment states
+  const [activeQuizId, setActiveQuizId] = useState(null);
+  const [quizAnswers, setQuizAnswers] = useState({});
+  const [quizResults, setQuizResults] = useState(null);
 
   // Notifications toggle
   const [showNotifications, setShowNotifications] = useState(false);
@@ -93,6 +103,39 @@ export const Mylearning = () => {
     queryFn: fetchNotifications,
     enabled: !!user,
     refetchInterval: 10000, // Poll notifications every 10s
+  });
+
+  // Quiz / Assessment Queries
+  const activeCourseIdForQuiz = dashboardData?.lastActiveEnrollment?.course?.id;
+  const { data: quizzes } = useQuery({
+    queryKey: ["courseQuizzes", activeCourseIdForQuiz],
+    queryFn: () => fetchCourseQuizzes(activeCourseIdForQuiz),
+    enabled: activeTab === "assessment" && !!activeCourseIdForQuiz,
+  });
+
+  const { data: quizQuestions } = useQuery({
+    queryKey: ["quizQuestions", activeQuizId],
+    queryFn: () => fetchQuizQuestions(activeQuizId),
+    enabled: !!activeQuizId,
+  });
+
+  const { data: quizProgress } = useQuery({
+    queryKey: ["quizProgress"],
+    queryFn: fetchQuizProgress,
+    enabled: activeTab === "assessment",
+  });
+
+  const submitQuizMutation = useMutation({
+    mutationFn: submitQuizAnswers,
+    onSuccess: (resData) => {
+      setQuizResults(resData);
+      queryClient.invalidateQueries(["quizProgress"]);
+      queryClient.invalidateQueries(["studentDashboard"]);
+      queryClient.invalidateQueries(["studentProfile"]);
+    },
+    onError: (err) => {
+      toast.error("Quiz submission failed: " + err.message);
+    }
   });
 
   // Active Roadmap Selection
@@ -310,6 +353,18 @@ export const Mylearning = () => {
               >
                 <FolderGit size={18} />
                 <span>Projects</span>
+              </button>
+
+              <button
+                onClick={() => setActiveTab("assessment")}
+                className={`flex items-center gap-3 px-3 py-2.5 rounded-xl font-semibold text-sm transition-all ${
+                  activeTab === "assessment"
+                    ? "bg-blue-50 text-blue-600 shadow-sm shadow-blue-500/5"
+                    : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
+                }`}
+              >
+                <ClipboardList size={18} />
+                <span>Assessments</span>
               </button>
             </nav>
           </div>
@@ -868,8 +923,184 @@ export const Mylearning = () => {
                 </div>
               </div>
             )}
+
+            {/* ==================== TAB: ASSESSMENTS / QUIZZES ==================== */}
+            {activeTab === "assessment" && (
+              <div className="space-y-6 animate-fade-in text-left">
+                <div className="flex flex-col gap-2">
+                  <h2 className="text-2xl font-extrabold text-slate-800 tracking-tight">Interactive Assessments & Quizzes</h2>
+                  <p className="text-sm text-slate-500">Test your comprehension of lessons. Pass with 60% or more to earn +50 XP.</p>
+                </div>
+
+                <div className="space-y-4">
+                  {quizzes?.map((quiz) => {
+                    const progress = quizProgress?.find(p => p.quiz.id === quiz.id);
+                    const isCompleted = progress?.passed;
+                    const isFailed = progress && !progress.passed;
+
+                    return (
+                      <div key={quiz.id} className="p-6 bg-white border border-slate-200/80 rounded-3xl shadow-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                        <div className="space-y-1">
+                          <h3 className="font-extrabold text-slate-800 text-base">{quiz.title}</h3>
+                          <p className="text-xs text-slate-400">{quiz.description}</p>
+                          {progress && (
+                            <span className="text-[10px] text-slate-500 block pt-1 font-medium">
+                              Last Attempt: {progress.score}% Score
+                            </span>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-3 shrink-0">
+                          {isCompleted ? (
+                            <span className="px-3 py-1 bg-emerald-50 text-emerald-600 rounded-full text-xs font-bold uppercase tracking-wider">
+                              Passed
+                            </span>
+                          ) : isFailed ? (
+                            <span className="px-3 py-1 bg-rose-50 text-rose-600 rounded-full text-xs font-bold uppercase tracking-wider">
+                              Failed
+                            </span>
+                          ) : (
+                            <span className="px-3 py-1 bg-slate-100 text-slate-500 rounded-full text-xs font-bold uppercase tracking-wider">
+                              Available
+                            </span>
+                          )}
+                          <button
+                            onClick={() => {
+                              setActiveQuizId(quiz.id);
+                              setQuizAnswers({});
+                              setQuizResults(null);
+                            }}
+                            className="px-4 py-2 bg-slate-900 hover:bg-blue-600 text-white rounded-xl font-bold text-xs transition-colors"
+                          >
+                            {isCompleted ? "Retake Exam" : "Start Test"}
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                  {(!quizzes || quizzes.length === 0) && (
+                    <div className="p-8 text-center text-slate-400 border border-dashed border-slate-200 rounded-3xl text-xs">
+                      No assessments configured for your active course yet. Enroll or start learning to unlock quizzes.
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
         </main>
+
+        {/* Quiz Play Console Modal */}
+        {activeQuizId && (
+          <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4">
+            <div className="w-full max-w-2xl bg-white rounded-3xl shadow-xl overflow-hidden border border-slate-150 animate-fade-in flex flex-col max-h-[90vh]">
+              <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+                <div>
+                  <span className="text-[10px] font-bold text-blue-600 uppercase tracking-widest block">Interactive Examination</span>
+                  <h3 className="font-extrabold text-slate-900 text-lg">Quiz Assessment</h3>
+                </div>
+                <button
+                  onClick={() => {
+                    setActiveQuizId(null);
+                    setQuizAnswers({});
+                    setQuizResults(null);
+                  }}
+                  className="text-slate-400 hover:text-slate-600 font-bold text-sm"
+                >
+                  ✕
+                </button>
+              </div>
+
+              <div className="flex-1 overflow-y-auto p-6 space-y-6 text-left">
+                {!quizResults ? (
+                  <form
+                    onSubmit={(e) => {
+                      e.preventDefault();
+                      submitQuizMutation.mutate({ quizId: activeQuizId, answers: quizAnswers });
+                    }}
+                    className="space-y-6"
+                  >
+                    {quizQuestions?.map((q, idx) => (
+                      <div key={q.id} className="space-y-3">
+                        <h4 className="font-extrabold text-slate-800 text-sm">
+                          {idx + 1}. {q.questionText}
+                        </h4>
+                        <div className="grid md:grid-cols-2 gap-3">
+                          {[
+                            { key: "A", text: q.optionA },
+                            { key: "B", text: q.optionB },
+                            { key: "C", text: q.optionC },
+                            { key: "D", text: q.optionD }
+                          ].map(opt => (
+                            <label
+                              key={opt.key}
+                              className={`p-3.5 rounded-2xl border cursor-pointer transition-all flex items-center gap-3 ${
+                                quizAnswers[q.id] === opt.key
+                                  ? "border-blue-500 bg-blue-50/20"
+                                  : "border-slate-100 hover:border-slate-200"
+                              }`}
+                            >
+                              <input
+                                type="radio"
+                                name={`question-${q.id}`}
+                                value={opt.key}
+                                checked={quizAnswers[q.id] === opt.key}
+                                onChange={() => setQuizAnswers({ ...quizAnswers, [q.id]: opt.key })}
+                                required
+                                className="text-blue-600 focus:ring-blue-500"
+                              />
+                              <span className="text-xs font-semibold text-slate-700">
+                                <span className="font-bold text-slate-400 mr-1.5">{opt.key}.</span>
+                                {opt.text}
+                              </span>
+                            </label>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+
+                    <button
+                      type="submit"
+                      disabled={submitQuizMutation.isPending}
+                      className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl text-xs font-bold transition-all shadow-md"
+                    >
+                      {submitQuizMutation.isPending ? "Evaluating Score..." : "Submit Assessment"}
+                    </button>
+                  </form>
+                ) : (
+                  <div className="py-8 text-center space-y-6 animate-fade-in">
+                    <div className={`w-16 h-16 rounded-full flex items-center justify-center mx-auto text-white text-2xl font-bold shadow-lg ${
+                      quizResults.passed ? "bg-emerald-500 shadow-emerald-500/20" : "bg-rose-500 shadow-rose-500/20"
+                    }`}>
+                      {quizResults.passed ? "✓" : "✕"}
+                    </div>
+                    <div className="space-y-2">
+                      <h4 className="text-xl font-extrabold text-slate-800">
+                        {quizResults.passed ? "Congratulations! You Passed!" : "Assessment Failed"}
+                      </h4>
+                      <p className="text-xs text-slate-400">
+                        You scored {quizResults.score}% by answering {quizResults.correctCount} of {quizResults.totalCount} questions correctly.
+                      </p>
+                      {quizResults.passed && (
+                        <span className="inline-block px-3 py-1.5 bg-blue-50 text-blue-600 rounded-xl text-[10px] font-bold uppercase tracking-wider mt-2 animate-bounce">
+                          +50 XP Earned
+                        </span>
+                      )}
+                    </div>
+                    <button
+                      onClick={() => {
+                        setActiveQuizId(null);
+                        setQuizAnswers({});
+                        setQuizResults(null);
+                      }}
+                      className="px-6 py-2.5 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-bold shadow transition-all"
+                    >
+                      Return to Workspace
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* ----------------- CONTEXTUAL RIGHT PANEL ----------------- */}
         <aside className="w-80 border-l border-slate-200/80 bg-white py-8 px-6 flex flex-col gap-6 hidden xl:flex shrink-0 text-left">
