@@ -15,9 +15,6 @@ export const Head = () => {
         <NavLink className="nav-link" to={role === "STUDENT" ? "/mylearning" : "/myclass"}>
           {role === "STUDENT" ? "My Learning" : "My Courses"}
         </NavLink>
-        <NavLink className="nav-link" to="profile">
-          Profile
-        </NavLink>
       </div>
     </header>
   );

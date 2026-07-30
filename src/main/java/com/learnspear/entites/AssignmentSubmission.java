@@ -1,5 +1,6 @@
 package com.learnspear.entites;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -20,10 +21,12 @@ public class AssignmentSubmission {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "assignment_id", nullable = false)
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "submissions", "course"})
     private Assignment assignment;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "student_id", nullable = false)
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "password", "role", "created_at", "bio", "xp", "streak"})
     private Users student;
 
     @Column(name = "submission_text", columnDefinition = "TEXT")

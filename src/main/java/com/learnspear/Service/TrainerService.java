@@ -198,6 +198,11 @@ public class TrainerService {
         long currentCount = lessonRepo.countByCourse(course);
         lesson.setCourse(course);
         lesson.setSequence((int)(currentCount + 1));
+        if (lesson.getSectionId() != null) {
+            CourseSection section = courseSectionRepo.findById(lesson.getSectionId())
+                    .orElseThrow(() -> new RuntimeException("Section not found"));
+            lesson.setSection(section);
+        }
         return lessonRepo.save(lesson);
     }
 
@@ -214,7 +219,13 @@ public class TrainerService {
         if (updatedData.getLessonType() != null) lesson.setLessonType(updatedData.getLessonType());
         if (updatedData.getIsPreview() != null) lesson.setIsPreview(updatedData.getIsPreview());
         if (updatedData.getResourcesUrl() != null) lesson.setResourcesUrl(updatedData.getResourcesUrl());
-        if (updatedData.getSection() != null) lesson.setSection(updatedData.getSection());
+        if (updatedData.getSection() != null) {
+            lesson.setSection(updatedData.getSection());
+        } else if (updatedData.getSectionId() != null) {
+            CourseSection section = courseSectionRepo.findById(updatedData.getSectionId())
+                    .orElseThrow(() -> new RuntimeException("Section not found"));
+            lesson.setSection(section);
+        }
         return lessonRepo.save(lesson);
     }
 

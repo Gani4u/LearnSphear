@@ -47,9 +47,12 @@ public class Lessons {
     @Column(nullable = false)
     private Integer sequence;
 
+    @Transient
+    private Long sectionId;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "course_id", referencedColumnName = "id", nullable = false)
-    @JsonBackReference
+    @JsonIgnore
     private Courses course;
 
     @ManyToOne(fetch = FetchType.LAZY)

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "react-toastify";
@@ -132,6 +132,13 @@ export const Mycourse = () => {
     queryFn: fetchTrainerSessions,
     enabled: activeTab === "sessions" || activeTab === "dashboard",
   });
+
+  // Pre-select first course if none is selected yet
+  useEffect(() => {
+    if (courses.length > 0 && !selectedCourseId) {
+      setSelectedCourseId(courses[0].id.toString());
+    }
+  }, [courses, selectedCourseId]);
 
   // Mutations
   const createCourseMutation = useMutation({
@@ -461,11 +468,6 @@ export const Mycourse = () => {
         </div>
       </div>
     );
-  }
-
-  // Pre-select first course if none is selected yet
-  if (courses.length > 0 && !selectedCourseId) {
-    setSelectedCourseId(courses[0].id.toString());
   }
 
   const activeCourse = courses.find(c => c.id.toString() === selectedCourseId);
@@ -866,8 +868,13 @@ export const Mycourse = () => {
               </div>
 
               {!selectedCourseId ? (
-                <div className="bg-[#111827] border border-slate-800 rounded-2xl p-8 text-center text-slate-400">
-                  Select or create a course to begin adding syllabus.
+                <div className="bg-[#111827] border border-slate-800 rounded-2xl p-12 text-center">
+                  <BookOpen size={48} className="text-slate-600 mx-auto mb-4" />
+                  <h3 className="text-lg font-bold text-white">No Course Selected</h3>
+                  <p className="text-slate-400 text-sm max-w-md mx-auto mt-2">Before setting up your syllabus curriculum, you need to create a course template or select one from the header.</p>
+                  <button onClick={openCreateCourseModal} className="bg-indigo-650 hover:bg-indigo-600 text-white px-5 py-2.5 rounded-xl font-semibold text-sm shadow-md mt-6 transition-all">
+                    Create Course Template
+                  </button>
                 </div>
               ) : (
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -1043,8 +1050,13 @@ export const Mycourse = () => {
               </div>
 
               {!selectedCourseId ? (
-                <div className="bg-[#111827] border border-slate-800 rounded-2xl p-8 text-center text-slate-400">
-                  Select a course to view and manage assignments.
+                <div className="bg-[#111827] border border-slate-800 rounded-2xl p-12 text-center">
+                  <ClipboardCheck size={48} className="text-slate-600 mx-auto mb-4" />
+                  <h3 className="text-lg font-bold text-white">No Course Selected</h3>
+                  <p className="text-slate-400 text-sm max-w-md mx-auto mt-2">Before setting up problem tasks and assignments, you need to create a course template or select one from the header.</p>
+                  <button onClick={openCreateCourseModal} className="bg-indigo-650 hover:bg-indigo-600 text-white px-5 py-2.5 rounded-xl font-semibold text-sm shadow-md mt-6 transition-all">
+                    Create Course Template
+                  </button>
                 </div>
               ) : (
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -1225,8 +1237,13 @@ export const Mycourse = () => {
               </div>
 
               {!selectedCourseId ? (
-                <div className="bg-[#111827] border border-slate-800 rounded-2xl p-8 text-center text-slate-400">
-                  Select a course to view and manage projects.
+                <div className="bg-[#111827] border border-slate-800 rounded-2xl p-12 text-center">
+                  <FolderGit size={48} className="text-slate-600 mx-auto mb-4" />
+                  <h3 className="text-lg font-bold text-white">No Course Selected</h3>
+                  <p className="text-slate-400 text-sm max-w-md mx-auto mt-2">Before setting up Capstone Projects, you need to create a course template or select one from the header.</p>
+                  <button onClick={openCreateCourseModal} className="bg-indigo-650 hover:bg-indigo-600 text-white px-5 py-2.5 rounded-xl font-semibold text-sm shadow-md mt-6 transition-all">
+                    Create Course Template
+                  </button>
                 </div>
               ) : (
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -1407,8 +1424,13 @@ export const Mycourse = () => {
               </div>
 
               {!selectedCourseId ? (
-                <div className="bg-[#111827] border border-slate-800 rounded-2xl p-8 text-center text-slate-400">
-                  Select a course to view students details.
+                <div className="bg-[#111827] border border-slate-800 rounded-2xl p-12 text-center">
+                  <Users size={48} className="text-slate-600 mx-auto mb-4" />
+                  <h3 className="text-lg font-bold text-white">No Course Selected</h3>
+                  <p className="text-slate-400 text-sm max-w-md mx-auto mt-2">Before viewing student details and learning insights, you need to create a course template or select one from the header.</p>
+                  <button onClick={openCreateCourseModal} className="bg-indigo-650 hover:bg-indigo-600 text-white px-5 py-2.5 rounded-xl font-semibold text-sm shadow-md mt-6 transition-all">
+                    Create Course Template
+                  </button>
                 </div>
               ) : students.length === 0 ? (
                 <div className="bg-[#111827] border border-slate-800 rounded-2xl p-12 text-center text-slate-500">
