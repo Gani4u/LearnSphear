@@ -1,11 +1,13 @@
 import { useState, useEffect } from "react";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
+import { useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "react-toastify";
+import { logout } from "../store/AuthSlice";
 import {
   LayoutDashboard, BookOpen, GitPullRequest, ClipboardCheck, FolderGit, Users, Calendar, Settings,
   Search, Plus, Sparkles, AlertCircle, Edit, Trash2, CheckCircle, XCircle, ArrowRight, Eye, Play,
-  ExternalLink, FileText, Check, Save, X, BookOpenCheck, BarChart3, GraduationCap, Clock, Award
+  ExternalLink, FileText, Check, Save, X, BookOpenCheck, BarChart3, GraduationCap, Clock, Award, LogOut
 } from "lucide-react";
 import {
   fetchTrainerDashboard, fetchTrainerCourses, createCourse, updateCourse, deleteCourse,
@@ -19,6 +21,14 @@ import {
 export const Mycourse = () => {
   const user = useSelector((state) => state.auth.user);
   const queryClient = useQueryClient();
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    dispatch(logout());
+    toast.success("Logged out!");
+    navigate("/login");
+  };
 
   const [activeTab, setActiveTab] = useState("dashboard");
   const [searchQuery, setSearchQuery] = useState("");
@@ -166,10 +176,10 @@ export const Mycourse = () => {
   const deleteCourseMutation = useMutation({
     mutationFn: deleteCourse,
     onSuccess: () => {
-      toast.success("Draft course deleted.");
+      toast.success("Course deleted successfully.");
       queryClient.invalidateQueries(["trainerCourses"]);
     },
-    onError: (e) => toast.error("Delete failed. Only DRAFT courses can be deleted.")
+    onError: (e) => toast.error("Delete failed: " + (e.response?.data || e.message))
   });
 
   const publishCourseMutation = useMutation({
@@ -585,8 +595,17 @@ export const Mycourse = () => {
           </nav>
         </div>
 
-        <div className="text-xs text-slate-500 font-medium px-4">
-          © {new Date().getFullYear()} LearnSphear LMS
+        <div className="space-y-4">
+          <button 
+            onClick={handleLogout}
+            className="w-full flex items-center gap-3 px-4 py-3 rounded-xl font-semibold text-sm text-rose-400 hover:bg-rose-950/20 transition-all border border-transparent hover:border-rose-900/30"
+          >
+            <LogOut size={16} />
+            <span>Log Out</span>
+          </button>
+          <div className="text-xs text-slate-500 font-medium px-4 pt-4 border-t border-slate-800">
+            © {new Date().getFullYear()} LearnSphear LMS
+          </div>
         </div>
       </aside>
 

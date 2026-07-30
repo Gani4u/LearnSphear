@@ -3,6 +3,7 @@ package com.learnspear.Service;
 import com.learnspear.DTOs.*;
 import com.learnspear.Repository.*;
 import com.learnspear.entites.*;
+import com.learnspear.Enums.Role;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -32,6 +33,7 @@ public class TrainerService {
     private final CourseReviewRepo courseReviewRepo;
     private final LessonProgressRepo lessonProgressRepo;
     private final CertificateRepo certificateRepo;
+    private final WishlistRepo wishlistRepo;
 
     // ============================================================
     // 1. DASHBOARD
@@ -126,9 +128,63 @@ public class TrainerService {
     @Transactional
     public void deleteCourse(Long courseId, Principal principal) {
         Courses course = getCourseOwnedByTrainer(courseId, principal);
-        if (!"DRAFT".equalsIgnoreCase(course.getStatus())) {
-            throw new RuntimeException("Only DRAFT courses can be deleted. Archive published courses instead.");
+
+        List<ProjectSubmission> projectSubmissions = projectSubmissionRepo.findByCourseId(courseId);
+        if (!projectSubmissions.isEmpty()) {
+            projectSubmissionRepo.deleteAll(projectSubmissions);
         }
+
+        List<Project> projects = projectRepo.findByCourseId(courseId);
+        if (!projects.isEmpty()) {
+            projectRepo.deleteAll(projects);
+        }
+
+        List<Assignment> assignments = assignmentRepo.findByCourse(course);
+        for (Assignment a : assignments) {
+            List<AssignmentSubmission> subs = assignmentSubmissionRepo.findByAssignmentId(a.getId());
+            if (!subs.isEmpty()) {
+                assignmentSubmissionRepo.deleteAll(subs);
+            }
+        }
+        if (!assignments.isEmpty()) {
+            assignmentRepo.deleteAll(assignments);
+        }
+
+        List<Certificate> certificates = certificateRepo.findByCourseId(courseId);
+        if (!certificates.isEmpty()) {
+            certificateRepo.deleteAll(certificates);
+        }
+
+        List<CourseReview> reviews = courseReviewRepo.findByCourseId(courseId);
+        if (!reviews.isEmpty()) {
+            courseReviewRepo.deleteAll(reviews);
+        }
+
+        List<Enrollment> enrollments = enrollmentRepo.findByCourse(course);
+        if (!enrollments.isEmpty()) {
+            enrollmentRepo.deleteAll(enrollments);
+        }
+
+        List<LessonProgress> lpList = lessonProgressRepo.findByCourseId(courseId);
+        if (!lpList.isEmpty()) {
+            lessonProgressRepo.deleteAll(lpList);
+        }
+
+        List<Wishlist> wishlists = wishlistRepo.findByCourseId(courseId);
+        if (!wishlists.isEmpty()) {
+            wishlistRepo.deleteAll(wishlists);
+        }
+
+        List<Lessons> lessons = lessonRepo.findByCourseOrderBySequenceAsc(course);
+        if (!lessons.isEmpty()) {
+            lessonRepo.deleteAll(lessons);
+        }
+
+        List<CourseSection> sections = courseSectionRepo.findByCourseOrderBySequenceAsc(course);
+        if (!sections.isEmpty()) {
+            courseSectionRepo.deleteAll(sections);
+        }
+
         courseRepo.delete(course);
     }
 
@@ -475,8 +531,14 @@ public class TrainerService {
     }
 
     private Courses getCourseOwnedByTrainer(Long courseId, Principal principal) {
-        return courseRepo.findByIdAndTrainerUsername(courseId, principal.getName())
-                .orElseThrow(() -> new RuntimeException("Course not found or unauthorized"));
+        Users user = userRepo.findByUsername(principal.getName())
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        Courses course = courseRepo.findById(courseId)
+                .orElseThrow(() -> new RuntimeException("Course not found"));
+        if (user.getRole() != Role.ADMIN && !course.getTrainer().getUsername().equals(user.getUsername())) {
+            throw new RuntimeException("Unauthorized: You do not own this course");
+        }
+        return course;
     }
 
     private void verifyTrainerOwnsSection(CourseSection section, Principal principal) {
