@@ -8,6 +8,7 @@ import java.util.Optional;
 
 public interface WishlistRepo extends JpaRepository<Wishlist, Long> {
     List<Wishlist> findByStudent(Users student);
+    List<Wishlist> findByCourseId(Long courseId);
     Optional<Wishlist> findByStudentIdAndCourseId(Long studentId, Long courseId);
     void deleteByStudentIdAndCourseId(Long studentId, Long courseId);
     boolean existsByStudentIdAndCourseId(Long studentId, Long courseId);

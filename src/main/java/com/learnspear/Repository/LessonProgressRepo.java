@@ -9,6 +9,7 @@ import java.util.Optional;
 @Repository
 public interface LessonProgressRepo extends JpaRepository<LessonProgress, Long> {
     List<LessonProgress> findByStudentIdAndCourseId(Long studentId, Long courseId);
+    List<LessonProgress> findByCourseId(Long courseId);
     Optional<LessonProgress> findByStudentIdAndLessonId(Long studentId, Long lessonId);
     long countByStudentIdAndCourseIdAndCompleted(Long studentId, Long courseId, Boolean completed);
 }

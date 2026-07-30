@@ -8,6 +8,7 @@ import java.util.Optional;
 
 public interface CertificateRepo extends JpaRepository<Certificate, Long> {
     List<Certificate> findByStudent(Users student);
+    List<Certificate> findByCourseId(Long courseId);
     Optional<Certificate> findByStudentIdAndCourseId(Long studentId, Long courseId);
     long countByStudentId(Long studentId);
 }

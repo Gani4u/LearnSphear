@@ -136,8 +136,8 @@ const StudentHome = () => {
 
           {/* Search bar inside Hero */}
           <div className="pt-2 max-w-md">
-            <div className="relative">
-              <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-400" size={16} />
+            <div className="relative flex items-center">
+              <Search className="absolute left-4 text-slate-400" size={16} />
               <input
                 type="text"
                 placeholder="Search courses, frameworks, concepts..."

@@ -121,8 +121,10 @@ export const Mylearning = () => {
     onSuccess: () => {
       toast.success("Assignment submitted! ✅");
       setShowAssignmentModal(false);
+      setAssignmentText("");
       queryClient.invalidateQueries(["studentAssignments"]);
     },
+    onError: (e) => toast.error("Submission failed: " + (e.response?.data || e.message)),
   });
 
   const wishlistMutation = useMutation({
