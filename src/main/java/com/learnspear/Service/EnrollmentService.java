@@ -4,6 +4,7 @@ import com.learnspear.DTOs.CourseDTO;
 import com.learnspear.DTOs.CourseResponseDTO;
 import com.learnspear.DTOs.EnrollmentResponseDTO;
 import com.learnspear.DTOs.LessonDto;
+import com.learnspear.DTOs.StudentDTO;
 import com.learnspear.Repository.CourseRepo;
 import com.learnspear.Repository.EnrollmentRepo;
 import com.learnspear.Repository.UserRepo;
@@ -14,6 +15,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.security.Principal;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -45,8 +47,8 @@ public class EnrollmentService {
     }
 
 
-    public List<EnrollmentResponseDTO> getEnrollmentsForStudent(Long studentId) {
-        Users student = userRepo.findById(studentId)
+    public List<EnrollmentResponseDTO> getEnrollmentsForStudent(Principal principal) {
+        Users student = userRepo.findByUsername(principal.getName())
                 .orElseThrow(() -> new RuntimeException("Student not found"));
 
         List<Enrollment> enrollments = enrollmentRepo.findByStudent(student);
@@ -75,5 +77,36 @@ public class EnrollmentService {
                     .course(courseDTO)
                     .build();
         }).toList();
+    }
+
+    public String unenrollStudent(Long studentId, Long courseId) {
+        Users student = userRepo.findById(studentId)
+                .orElseThrow(() -> new RuntimeException("Student not found"));
+
+        Courses course = courseRepo.findById(courseId)
+                .orElseThrow(() -> new RuntimeException("Course not found"));
+        Enrollment enrollment = enrollmentRepo.findByStudentAndCourse(student, course)
+                .orElseThrow(() -> new RuntimeException("Enrollment not found"));
+
+        enrollmentRepo.delete(enrollment);
+        return "Unenrollment successful";
+    }
+
+    public List<StudentDTO> getStudentsForCourse(Long courseId, Principal principal) {
+        Courses course = courseRepo.findById(courseId)
+                .orElseThrow(() -> new RuntimeException("Course not found"));
+
+        // Only the trainer who owns the course can see enrolled students
+        if (!course.getTrainer().getUsername().equals(principal.getName())) {
+            throw new RuntimeException("Access denied");
+        }
+
+        return enrollmentRepo.findByCourse(course).stream()
+                .map(enrollment -> StudentDTO.builder()
+                        .id(enrollment.getStudent().getId())
+                        .username(enrollment.getStudent().getUsername())
+                        .email(enrollment.getStudent().getEmail())
+                        .build())
+                .toList();
     }
 }

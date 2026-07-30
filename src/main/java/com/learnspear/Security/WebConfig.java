@@ -14,4 +14,3 @@ public class WebConfig implements WebMvcConfigurer {
                 .addResourceLocations("file:///C:/LearnSphear/uploads/course-images/");
     }
 }
-

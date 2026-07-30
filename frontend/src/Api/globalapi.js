@@ -1,7 +1,6 @@
 
 import axios from "axios";
 import { logout } from "../store/AuthSlice";
-import { useNavigate } from "react-router-dom";
 
 let store;
 

@@ -8,6 +8,8 @@ import { Provider } from "react-redux";
 import { store } from "./store/reduxstore";
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { injectStore } from './Api/globalapi';
+import '@fortawesome/fontawesome-free/css/all.min.css';
+
 injectStore(store);
 
 const queryClient = new QueryClient();
