@@ -322,7 +322,7 @@ export default function VideoDemoModal({ isOpen, onClose }) {
                 <div 
                   className="w-full max-w-2xl aspect-video bg-slate-900 border border-slate-800 rounded-2xl flex flex-col justify-between shadow-2xl relative overflow-hidden bg-cover bg-center transition-all duration-300"
                   style={{
-                    backgroundImage: `url(${activeScript[currentScene]?.backgroundImage})`,
+                    backgroundImage: `url(${process.env.PUBLIC_URL + activeScript[currentScene]?.backgroundImage})`,
                   }}
                 >
                   

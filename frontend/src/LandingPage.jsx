@@ -331,7 +331,7 @@ export default function LandingPage() {
           <div className="relative w-full max-w-[360px] aspect-square rounded-[36px] bg-gradient-to-tr from-white/90 to-white/40 p-4 border border-white/70 shadow-[0_20px_50px_-12px_rgba(30,41,59,0.08)] animate-float">
             <div className="w-full h-full rounded-[28px] overflow-hidden bg-slate-100 shadow-inner">
               <img
-                src="/student_hero.jpg"
+                src={process.env.PUBLIC_URL + "/student_hero.jpg"}
                 alt="Student learning 3D illustration"
                 className="w-full h-full object-cover hover:scale-105 transition-transform duration-700"
               />
@@ -447,7 +447,7 @@ export default function LandingPage() {
             <div className="w-full max-w-[240px] aspect-square rounded-3xl p-2.5 bg-white/5 border border-white/10 shadow-lg animate-float relative z-10">
               <div className="w-full h-full rounded-[18px] overflow-hidden bg-slate-800">
                 <img
-                  src="/trainer_hero.jpg"
+                  src={process.env.PUBLIC_URL + "/trainer_hero.jpg"}
                   alt="Trainer lecturer 3D illustration"
                   className="w-full h-full object-cover"
                 />
