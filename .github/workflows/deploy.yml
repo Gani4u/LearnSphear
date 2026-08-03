@@ -38,6 +38,8 @@ jobs:
       - name: Build React App
         working-directory: frontend
         run: npm run build
+        env:
+          CI: false
 
       - name: Configure Pages
         uses: actions/configure-pages@v5
