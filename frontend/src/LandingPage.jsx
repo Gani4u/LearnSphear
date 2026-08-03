@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { Login } from "./auth/Login";
 import { Registerpage } from "./auth/Registerpage";
 import { Button } from "./components/ui/button";
+import VideoDemoModal from "./components/demo/VideoDemoModal";
 import {
   BookOpen,
   Award,
@@ -18,7 +19,8 @@ import {
   Zap,
   HelpCircle,
   Mail,
-  ArrowUpRight
+  ArrowUpRight,
+  Play
 } from "lucide-react";
 
 // AuthModal wrapper with glassmorphism and subtle animations
@@ -144,6 +146,7 @@ export default function LandingPage() {
   const [scrolled, setScrolled] = useState(false);
   const [activeFaq, setActiveFaq] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [showDemoModal, setShowDemoModal] = useState(false);
 
   // Track scrolling to toggle glass navbar styling
   useEffect(() => {
@@ -222,6 +225,14 @@ export default function LandingPage() {
             </button>
             
             <span className="w-px h-6 bg-slate-200 hidden md:block"></span>
+
+            <button
+              onClick={() => setShowDemoModal(true)}
+              className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl px-4 py-2.5 text-sm font-bold shadow-sm flex items-center gap-1.5 border-0 cursor-pointer transition-all duration-200"
+            >
+              <Play size={12} className="fill-current" />
+              <span>Video Demo</span>
+            </button>
 
             <Button
               variant="secondary"
@@ -568,6 +579,12 @@ export default function LandingPage() {
           navigate("/"); // Clear url routing modal state
         }}
         onModeChange={setAuthMode}
+      />
+
+      {/* Video Demo Modal Overlay */}
+      <VideoDemoModal
+        isOpen={showDemoModal}
+        onClose={() => setShowDemoModal(false)}
       />
     </div>
   );
