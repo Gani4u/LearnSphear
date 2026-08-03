@@ -2,6 +2,7 @@
   "name": "frontend",
   "version": "0.1.0",
   "private": true,
+  "homepage": "https://Gani4u.github.io/LearnSphear",
   "dependencies": {
     "@fortawesome/fontawesome-free": "^6.7.2",
     "@reduxjs/toolkit": "^2.6.1",
@@ -58,6 +59,7 @@
   },
   "devDependencies": {
     "autoprefixer": "^10.4.27",
+    "gh-pages": "^6.3.0",
     "postcss": "^8.5.8",
     "tailwindcss": "^3.4.1"
   }
