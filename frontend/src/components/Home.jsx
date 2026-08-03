@@ -1,27 +1,25 @@
-import { useSelector } from "react-redux"
-import TrainerHome from "../trainer/components/TrainerHome";
+import { useEffect } from "react";
+import { useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
 import StudentHome from "../student/components/StudentHome";
 
-export const Home=()=>{
-    const user=useSelector((state)=>state.auth.user);
- 
-    return(
-        <>
-  
-{user && user.role === "STUDENT" && ( 
+export const Home = () => {
+  const user = useSelector((state) => state.auth.user);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (user && user.role === "TRAINER") {
+      navigate("/myclass", { replace: true });
+    }
+  }, [user, navigate]);
+
+  if (user && user.role === "TRAINER") {
+    return null;
+  }
+
+  return (
     <>
-     <StudentHome/>
-    
-    </>)}
-
-
-{user && user.role === "TRAINER" && (
-    <>
-    <TrainerHome />
-    
-    </>)}
-
-       
-        </>
-    )
-}
+      {user && user.role === "STUDENT" && <StudentHome />}
+    </>
+  );
+};

@@ -223,10 +223,10 @@ public class StudentService {
         List<MentorSession> sessions = mentorSessionRepo.findByStudentIdOrderByStartTimeAsc(student.getId());
 
         List<Enrollment> enrollments = enrollmentRepo.findByStudent(student);
-        EnrollmentResponseDTO lastActive = null;
+        StudentEnrollmentDTO lastActive = null;
         if (!enrollments.isEmpty()) {
             Enrollment active = enrollments.get(enrollments.size() - 1);
-            lastActive = mapEnrollmentToDTO(active);
+            lastActive = mapEnrollmentToStudentDTO(active);
         }
 
         return DashboardResponseDTO.builder()
@@ -247,29 +247,7 @@ public class StudentService {
     public List<StudentEnrollmentDTO> getEnrolledCourses(Principal principal) {
         Users student = getStudent(principal);
         List<Enrollment> enrollments = enrollmentRepo.findByStudent(student);
-        return enrollments.stream().map(e -> {
-            Courses course = e.getCourse();
-            long totalLessons = lessonRepo.countByCourse(course);
-            long completedLessons = lessonProgressRepo.countByStudentIdAndCourseIdAndCompleted(student.getId(), course.getId(), true);
-            return StudentEnrollmentDTO.builder()
-                    .enrollmentId(e.getId())
-                    .courseId(course.getId())
-                    .courseTitle(course.getTitle())
-                    .courseSubtitle(course.getSubtitle())
-                    .thumbnailUrl(course.getThumbnailUrl())
-                    .imageUrl(course.getImageUrl())
-                    .trainerName(course.getTrainer().getUsername())
-                    .progressPercentage(e.getProgressPercentage())
-                    .completed(e.getCompleted())
-                    .certificateGenerated(e.getCertificateGenerated())
-                    .enrollmentDate(e.getEnrollmentDate())
-                    .lastAccessedAt(e.getLastAccessedAt())
-                    .totalLessons((int) totalLessons)
-                    .completedLessons((int) completedLessons)
-                    .level(course.getLevel())
-                    .category(course.getCategory())
-                    .build();
-        }).collect(Collectors.toList());
+        return enrollments.stream().map(this::mapEnrollmentToStudentDTO).collect(Collectors.toList());
     }
 
     // ============================================================
@@ -450,6 +428,9 @@ public class StudentService {
         Users student = getStudent(principal);
         List<Enrollment> enrollments = enrollmentRepo.findByStudent(student);
         List<Courses> enrolledCourses = enrollments.stream().map(Enrollment::getCourse).collect(Collectors.toList());
+        if (enrolledCourses.isEmpty()) {
+            return new ArrayList<>();
+        }
         List<Assignment> assignments = assignmentRepo.findByCourseIn(enrolledCourses);
 
         return assignments.stream().map(a -> {
@@ -861,24 +842,27 @@ public class StudentService {
         }
     }
 
-    private EnrollmentResponseDTO mapEnrollmentToDTO(Enrollment enrollment) {
-        Courses course = enrollment.getCourse();
-        List<LessonDto> lessonDTOs = course.getLessons().stream().map(lesson -> LessonDto.builder()
-                .title(lesson.getTitle())
-                .content(lesson.getContent())
-                .sequence(lesson.getSequence())
-                .build()).toList();
-        CourseResponseDTO courseDTO = CourseResponseDTO.builder()
-                .id(course.getId())
-                .title(course.getTitle())
-                .description(course.getDescription())
+    private StudentEnrollmentDTO mapEnrollmentToStudentDTO(Enrollment e) {
+        Courses course = e.getCourse();
+        long totalLessons = lessonRepo.countByCourse(course);
+        long completedLessons = lessonProgressRepo.countByStudentIdAndCourseIdAndCompleted(e.getStudent().getId(), course.getId(), true);
+        return StudentEnrollmentDTO.builder()
+                .enrollmentId(e.getId())
+                .courseId(course.getId())
+                .courseTitle(course.getTitle())
+                .courseSubtitle(course.getSubtitle())
+                .thumbnailUrl(course.getThumbnailUrl())
                 .imageUrl(course.getImageUrl())
-                .lessons(lessonDTOs)
-                .build();
-        return EnrollmentResponseDTO.builder()
-                .id(enrollment.getId())
-                .enrollmentDate(enrollment.getEnrollmentDate())
-                .course(courseDTO)
+                .trainerName(course.getTrainer().getUsername())
+                .progressPercentage(e.getProgressPercentage())
+                .completed(e.getCompleted())
+                .certificateGenerated(e.getCertificateGenerated())
+                .enrollmentDate(e.getEnrollmentDate())
+                .lastAccessedAt(e.getLastAccessedAt())
+                .totalLessons((int) totalLessons)
+                .completedLessons((int) completedLessons)
+                .level(course.getLevel())
+                .category(course.getCategory())
                 .build();
     }
 }

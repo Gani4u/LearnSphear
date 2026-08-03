@@ -20,5 +20,5 @@ public class DashboardResponseDTO {
     private List<Notification> notifications;
     private List<MentorSession> upcomingSessions;
     private Integer dailyGoal; // in percentage, e.g. 60%
-    private EnrollmentResponseDTO lastActiveEnrollment;
+    private StudentEnrollmentDTO lastActiveEnrollment;
 }

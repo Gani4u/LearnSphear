@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "react-toastify";
@@ -57,9 +57,11 @@ export const CoursePlayer = () => {
     : [];
 
   // Set first lesson as active once loaded
-  if (allLessons.length > 0 && !activeLesson) {
-    setActiveLesson(allLessons[0]);
-  }
+  useEffect(() => {
+    if (allLessons.length > 0 && !activeLesson) {
+      setActiveLesson(allLessons[0]);
+    }
+  }, [allLessons, activeLesson]);
 
   const activeLessonId = activeLesson?.id;
 

@@ -1,11 +1,13 @@
-import { useState } from "react";
-import { useSelector } from "react-redux";
+import { useState, useEffect } from "react";
+import { useSelector, useDispatch } from "react-redux";
+import { useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "react-toastify";
+import { logout } from "../store/AuthSlice";
 import {
   LayoutDashboard, BookOpen, GitPullRequest, ClipboardCheck, FolderGit, Users, Calendar, Settings,
   Search, Plus, Sparkles, AlertCircle, Edit, Trash2, CheckCircle, XCircle, ArrowRight, Eye, Play,
-  ExternalLink, FileText, Check, Save, X, BookOpenCheck, BarChart3, GraduationCap, Clock, Award
+  ExternalLink, FileText, Check, Save, X, BookOpenCheck, BarChart3, GraduationCap, Clock, Award, LogOut
 } from "lucide-react";
 import {
   fetchTrainerDashboard, fetchTrainerCourses, createCourse, updateCourse, deleteCourse,
@@ -19,6 +21,14 @@ import {
 export const Mycourse = () => {
   const user = useSelector((state) => state.auth.user);
   const queryClient = useQueryClient();
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    dispatch(logout());
+    toast.success("Logged out!");
+    navigate("/login");
+  };
 
   const [activeTab, setActiveTab] = useState("dashboard");
   const [searchQuery, setSearchQuery] = useState("");
@@ -133,6 +143,13 @@ export const Mycourse = () => {
     enabled: activeTab === "sessions" || activeTab === "dashboard",
   });
 
+  // Pre-select first course if none is selected yet
+  useEffect(() => {
+    if (courses.length > 0 && !selectedCourseId) {
+      setSelectedCourseId(courses[0].id.toString());
+    }
+  }, [courses, selectedCourseId]);
+
   // Mutations
   const createCourseMutation = useMutation({
     mutationFn: createCourse,
@@ -159,10 +176,10 @@ export const Mycourse = () => {
   const deleteCourseMutation = useMutation({
     mutationFn: deleteCourse,
     onSuccess: () => {
-      toast.success("Draft course deleted.");
+      toast.success("Course deleted successfully.");
       queryClient.invalidateQueries(["trainerCourses"]);
     },
-    onError: (e) => toast.error("Delete failed. Only DRAFT courses can be deleted.")
+    onError: (e) => toast.error("Delete failed: " + (e.response?.data || e.message))
   });
 
   const publishCourseMutation = useMutation({
@@ -463,11 +480,6 @@ export const Mycourse = () => {
     );
   }
 
-  // Pre-select first course if none is selected yet
-  if (courses.length > 0 && !selectedCourseId) {
-    setSelectedCourseId(courses[0].id.toString());
-  }
-
   const activeCourse = courses.find(c => c.id.toString() === selectedCourseId);
 
   return (
@@ -583,8 +595,17 @@ export const Mycourse = () => {
           </nav>
         </div>
 
-        <div className="text-xs text-slate-500 font-medium px-4">
-          © {new Date().getFullYear()} LearnSphear LMS
+        <div className="space-y-4">
+          <button 
+            onClick={handleLogout}
+            className="w-full flex items-center gap-3 px-4 py-3 rounded-xl font-semibold text-sm text-rose-400 hover:bg-rose-950/20 transition-all border border-transparent hover:border-rose-900/30"
+          >
+            <LogOut size={16} />
+            <span>Log Out</span>
+          </button>
+          <div className="text-xs text-slate-500 font-medium px-4 pt-4 border-t border-slate-800">
+            © {new Date().getFullYear()} LearnSphear LMS
+          </div>
         </div>
       </aside>
 
@@ -866,8 +887,13 @@ export const Mycourse = () => {
               </div>
 
               {!selectedCourseId ? (
-                <div className="bg-[#111827] border border-slate-800 rounded-2xl p-8 text-center text-slate-400">
-                  Select or create a course to begin adding syllabus.
+                <div className="bg-[#111827] border border-slate-800 rounded-2xl p-12 text-center">
+                  <BookOpen size={48} className="text-slate-600 mx-auto mb-4" />
+                  <h3 className="text-lg font-bold text-white">No Course Selected</h3>
+                  <p className="text-slate-400 text-sm max-w-md mx-auto mt-2">Before setting up your syllabus curriculum, you need to create a course template or select one from the header.</p>
+                  <button onClick={openCreateCourseModal} className="bg-indigo-650 hover:bg-indigo-600 text-white px-5 py-2.5 rounded-xl font-semibold text-sm shadow-md mt-6 transition-all">
+                    Create Course Template
+                  </button>
                 </div>
               ) : (
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -1043,8 +1069,13 @@ export const Mycourse = () => {
               </div>
 
               {!selectedCourseId ? (
-                <div className="bg-[#111827] border border-slate-800 rounded-2xl p-8 text-center text-slate-400">
-                  Select a course to view and manage assignments.
+                <div className="bg-[#111827] border border-slate-800 rounded-2xl p-12 text-center">
+                  <ClipboardCheck size={48} className="text-slate-600 mx-auto mb-4" />
+                  <h3 className="text-lg font-bold text-white">No Course Selected</h3>
+                  <p className="text-slate-400 text-sm max-w-md mx-auto mt-2">Before setting up problem tasks and assignments, you need to create a course template or select one from the header.</p>
+                  <button onClick={openCreateCourseModal} className="bg-indigo-650 hover:bg-indigo-600 text-white px-5 py-2.5 rounded-xl font-semibold text-sm shadow-md mt-6 transition-all">
+                    Create Course Template
+                  </button>
                 </div>
               ) : (
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -1225,8 +1256,13 @@ export const Mycourse = () => {
               </div>
 
               {!selectedCourseId ? (
-                <div className="bg-[#111827] border border-slate-800 rounded-2xl p-8 text-center text-slate-400">
-                  Select a course to view and manage projects.
+                <div className="bg-[#111827] border border-slate-800 rounded-2xl p-12 text-center">
+                  <FolderGit size={48} className="text-slate-600 mx-auto mb-4" />
+                  <h3 className="text-lg font-bold text-white">No Course Selected</h3>
+                  <p className="text-slate-400 text-sm max-w-md mx-auto mt-2">Before setting up Capstone Projects, you need to create a course template or select one from the header.</p>
+                  <button onClick={openCreateCourseModal} className="bg-indigo-650 hover:bg-indigo-600 text-white px-5 py-2.5 rounded-xl font-semibold text-sm shadow-md mt-6 transition-all">
+                    Create Course Template
+                  </button>
                 </div>
               ) : (
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -1407,8 +1443,13 @@ export const Mycourse = () => {
               </div>
 
               {!selectedCourseId ? (
-                <div className="bg-[#111827] border border-slate-800 rounded-2xl p-8 text-center text-slate-400">
-                  Select a course to view students details.
+                <div className="bg-[#111827] border border-slate-800 rounded-2xl p-12 text-center">
+                  <Users size={48} className="text-slate-600 mx-auto mb-4" />
+                  <h3 className="text-lg font-bold text-white">No Course Selected</h3>
+                  <p className="text-slate-400 text-sm max-w-md mx-auto mt-2">Before viewing student details and learning insights, you need to create a course template or select one from the header.</p>
+                  <button onClick={openCreateCourseModal} className="bg-indigo-650 hover:bg-indigo-600 text-white px-5 py-2.5 rounded-xl font-semibold text-sm shadow-md mt-6 transition-all">
+                    Create Course Template
+                  </button>
                 </div>
               ) : students.length === 0 ? (
                 <div className="bg-[#111827] border border-slate-800 rounded-2xl p-12 text-center text-slate-500">
